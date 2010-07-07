@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JESS"/>
+	<classpathentry kind="lib" path="C:/java/jade/lib/jadeTools.jar"/>
+	<classpathentry kind="lib" path="C:/java/jade/lib/http.jar"/>
+	<classpathentry kind="lib" path="C:/java/jade/lib/iiop.jar"/>
+	<classpathentry kind="lib" path="C:/java/jade/lib/jade.jar" sourcepath="C:/java/jade/src/jade">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Java/JADE/doc/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/java/commons-configuration-1.6/commons-configuration-1.6.jar" sourcepath="C:/java/commons-configuration-1.6/commons-configuration-1.6-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/C:/java/commons-configuration-1.6/commons-configuration-1.6-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/java/mysql-connector-java-5.1.11/mysql-connector-java-5.1.11-bin.jar"/>
+	<classpathentry kind="lib" path="C:/java/xerces-2_9_1/resolver.jar"/>
+	<classpathentry kind="lib" path="C:/java/xerces-2_9_1/serializer.jar"/>
+	<classpathentry kind="lib" path="C:/java/xerces-2_9_1/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="C:/java/xerces-2_9_1/xercesSamples.jar"/>
+	<classpathentry kind="lib" path="C:/java/xerces-2_9_1/xml-apis.jar"/>
+	<classpathentry kind="lib" path="C:/java/jade/add-ons/XMLCodec/lib/XMLCodec.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
