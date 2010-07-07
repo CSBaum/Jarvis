@@ -34,7 +34,7 @@ public class SecurityResetBehaviour extends WakerBehaviour implements
 	 * @see jade.core.behaviours.Behaviour#action()
 	 */
 	@Override
-	public void handleElapsedTimeout() {
+	public void onWake() {
 		jarvis.lastSecurityLevel = jarvis.securityLevel;
 		System.out.println(getBehaviourName() + ": Reseting Security Levels");
 	}

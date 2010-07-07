@@ -41,6 +41,15 @@
         	includeAntRuntime="false"
                classpathref="project.class.path"/>
     </target>
+	<target name="compile-debug" depends="setup">
+	        <javac srcdir="${src.dir}" 
+	               destdir="${classes.dir}" 
+	        	   verbose="off"
+	        	   includeAntRuntime="false"
+	               classpathref="project.class.path">
+		 		<compilerarg value="-Xlint:deprecation"/>
+	        </javac>
+	    </target>
     
     <target name="deploy" depends="compile">
         <copy todir="../../Jarvis/classes">
