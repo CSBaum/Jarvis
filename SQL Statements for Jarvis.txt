@@ -1,0 +1,75 @@
+use jarvis;
+
+// Create the Agents table
+CREATE TABLE `agents` (
+  `UID` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `class` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`UID`),
+  UNIQUE KEY `UID_UNIQUE` (`UID`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+// Creat the Robots table
+CREATE TABLE `robots` (
+  `UID` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `hasAudio` binary(1) DEFAULT NULL,
+  `hasLaser` binary(1) DEFAULT NULL,
+  `hasMic` binary(1) DEFAULT NULL,
+  `hasSonar` binary(1) DEFAULT NULL,
+  `hasVideo` binary(1) DEFAULT NULL,
+  `cfgFile` text,
+  PRIMARY KEY (`UID`),
+  UNIQUE KEY `UID_UNIQUE` (`UID`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+
+// Create the Locations table
+CREATE TABLE `locations` (
+  `UID` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `description` varchar(128) DEFAULT NULL,
+  `gps` varchar(45) DEFAULT NULL,
+  `altitude` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`UID`),
+  UNIQUE KEY `UID_UNIQUE` (`UID`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+
+// Create Containers table
+CREATE TABLE `containers` (
+  `UID` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  `MAC` varchar(45) DEFAULT NULL,
+  `host` varchar(45) DEFAULT NULL,
+  `port` int(11) DEFAULT NULL,
+  `startupFlags` varchar(255) DEFAULT NULL,
+  `agent_id` int(11) NOT NULL,
+  `robot_id` int(11) NOT NULL,
+  `location_id` int(11) NOT NULL,
+  `enabled` char(1) DEFAULT ''0'',
+  PRIMARY KEY (`UID`),
+  UNIQUE KEY `name_UNIQUE` (`name`),
+  KEY `containers_fk_agent` (`agent_id`),
+  KEY `containers_fk_robot` (`robot_id`),
+  KEY `containers_fk_location` (`location_id`),
+  CONSTRAINT `containers_fk_agent` FOREIGN KEY (`agent_id`) REFERENCES `agents` (`UID`) ON DELETE CASCADE,
+  CONSTRAINT `containers_fk_location` FOREIGN KEY (`location_id`) REFERENCES `locations` (`UID`) ON DELETE CASCADE,
+  CONSTRAINT `containers_fk_robot` FOREIGN KEY (`robot_id`) REFERENCES `robots` (`UID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+// Lookup of valid agents in the DB
+SELECT a.UID as Agent_ID, a.name as Agent, a.class as Class, b.MAC as MAC_Addr, b.host, b.port
+  FROM agents a,
+       containers b
+  WHERE a.UID = b.agent_id
+    AND b.enabled = '1'
+    
+//  Java version of the abovce query
+SELECT a.UID, a.name, a.class, b.MAC, b.host, b.port
+  FROM agents a,
+       containers b
+  WHERE a.UID = b.agent_id
+    AND b.enabled = '1'

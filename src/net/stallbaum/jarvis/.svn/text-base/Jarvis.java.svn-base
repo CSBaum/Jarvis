@@ -1,0 +1,174 @@
+/**
+ * 
+ */
+package net.stallbaum.jarvis;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import net.stallbaum.jarvis.util.WakeOnLan;
+
+import jade.core.Agent;
+import jade.core.AID;
+import jade.core.behaviours.*;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+
+//import jess.*;
+
+/**
+ * @author Sean Stallbaum
+ *
+ */
+public class Jarvis extends Agent {
+
+	private AID[] jarvisAgents;
+	
+	private static final long serialVersionUID = 4760582118511377080L;
+	
+	private Connection conn;
+	private ResultSet agentRS = null;
+	private Statement stmt = null;
+	
+	private int numberOfRows = 0;
+
+	/**
+	 * Method used by JADE to initialize the agent ...
+	 * 
+	 *  NOTE: Avoid constructor since framework may not be initialized in time
+	 */
+	protected void setup(){
+		
+		System.out.println("Hello! Jarvis server agent: " + getAID().getName() + "is starting");
+		
+		// Process configuration information
+		
+		// Configure / Connect to DB
+		try {
+			// Load MySQL Driver
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			
+			// Create connection (Should be based on property file)
+			conn = DriverManager.getConnection("jdbc:mysql://localhost/test?" +
+			                                   "user=monty&password=greatsqldb");
+			
+			stmt = conn.createStatement();
+		    agentRS = stmt.executeQuery("SELECT * FROM agents");
+		    agentRS.last();
+		    numberOfRows = agentRS.getRow();
+		    System.out.println("Jarvis knows about: " + agentRS + " agents");
+		    agentRS.beforeFirst();
+		    
+
+		} catch (SQLException sex){
+			// handle any errors
+			System.out.println("SQLException: " + sex.getMessage());
+			System.out.println("SQLState: " + sex.getSQLState());
+			System.out.println("VendorError: " + sex.getErrorCode());
+		}catch (Exception ex){
+			System.out.println("Unable to setup database: " + ex.getMessage());
+			System.out.println(ex.getStackTrace());
+		}finally {
+		    /*
+			// it is a good idea to release
+		    // resources in a finally{} block
+		    // in reverse-order of their creation
+		    // if they are no-longer needed
+
+		    if (agentRS != null) {
+		        try {
+		        	agentRS.close();
+		        } catch (SQLException sqlEx) { } // ignore
+
+		        agentRS = null;
+		    }
+
+		    if (stmt != null) {
+		        try {
+		            stmt.close();
+		        } catch (SQLException sqlEx) { } // ignore
+
+		        stmt = null;
+		    }*/
+		}
+				
+		// Add the cyclical check behavior
+		addBehaviour(new JarvisStartUpBehavior(this, 20000));
+	}
+	
+	private class JarvisStartUpBehavior extends TickerBehaviour {
+
+		public JarvisStartUpBehavior(Agent a, long period) {
+			super(a, period);
+		}
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3414333874046280655L;
+
+		@Override
+		protected void onTick() {
+			boolean wakeupFlag = false;
+
+			// Update the list of JAgents agents
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType("jarvis-agent-robot");
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(myAgent,
+						template);
+				
+				for (int i = 0; i < result.length; ++i) {
+					jarvisAgents[i] = result[i].getName();
+					System.out.println(jarvisAgents[i].getName());
+				}
+
+				if (result.length < 1) {
+					// Initialize ALL agents from RS
+
+					wakeupFlag = true;
+				} else if (result.length < numberOfRows){
+					boolean isMissing = true;
+					System.out.println("Found " + result.length + " jarvis agents");
+					jarvisAgents = new AID[result.length];
+					while (agentRS.next()) {
+						isMissing = true;
+						String agentName = agentRS.getString("name");
+						for (int i = 0; i < result.length; ++i) {
+							if (agentName.equalsIgnoreCase(result[i].getName().getName())){
+								isMissing = false;
+							}
+						}
+						if (isMissing){
+							// call Wake on Lan class to wake up container
+							WakeOnLan wol = new WakeOnLan();
+							//wol.wakeUp("", "");
+						}
+					}
+				}
+				else {
+					// Everyone is up and running
+					// Do NOTHING !!!
+					System.out.println("Found " + result.length + " jarvis agents");
+				}
+			} catch (FIPAException fe) {
+				fe.printStackTrace();
+			} catch (SQLException sex) {
+				// TODO Auto-generated catch block
+				System.out.println("SQLException: " + sex.getMessage());
+				System.out.println("SQLState: " + sex.getSQLState());
+				System.out.println("VendorError: " + sex.getErrorCode());
+			}
+		}
+
+	}
+}

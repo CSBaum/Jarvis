@@ -1,0 +1,143 @@
+/**
+ * 
+ */
+package net.stallbaum.jarvisagent;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import javax.xml.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+
+/**
+ * @author Sean
+ *
+ */
+public class JarvisAgent extends Agent {
+
+	/**
+	 * Unique id suggested by Eclipse :)
+	 */
+	private static final long serialVersionUID = -6400372757964918253L;
+
+	/**
+	 * 
+	 */
+	public JarvisAgent() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	/**
+	 * Method invoked when Agent adds behavior
+	 */
+	protected void setup(){
+		System.out.println("Starting JarvisAgent: " + getAID().getName());
+		
+		// Register with the Container's Yellowbook service
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(getAID());
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("jarvis-agent-robot");
+		sd.setName("jarvis-system");
+		dfd.addServices(sd);
+		try {
+			DFService.register(this, dfd);
+		} catch (FIPAException fe){
+			fe.printStackTrace();
+		}
+		
+		// TODO Implement rest of agent start up code
+		
+		// Add JarvisCommBehahvior
+		addBehaviour(new ServerCommunicationBehavior());
+		
+		// Add PlayerBehavior
+	}
+
+	/**
+	 * Method invoked when Agent is shutting down
+	 */
+	protected void takedown() {
+		// Unregister from YB Service
+		try {
+			DFService.deregister(this);
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+		System.out.println("JarvisAgent " + getAID().getName() + " terminating");
+	}
+	/**
+	 * Inner class for supporting the communication between the agent and Jarvis
+	 * @author sstallbaum
+	 *
+	 */
+	private class ServerCommunicationBehavior extends CyclicBehaviour {
+		 
+		private static final long serialVersionUID = 5440333635234994943L;
+
+		public void action() {
+			  Integer price = 0;  // Delete me soon
+			  
+			  MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+			  ACLMessage msg = myAgent.receive(mt);
+			  
+			  if (msg != null) {
+		      // CFP Message received. Process it
+		      String content = msg.getContent();
+		      ACLMessage reply = msg.createReply();
+
+		      if (content != null) {
+		    	  Document dom;
+		    	  DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		    	  try {
+
+		  			//Using factory get an instance of document builder
+		  			DocumentBuilder db = dbf.newDocumentBuilder();
+
+		  			//parse using builder to get DOM representation of the XML file
+		  			ByteArrayInputStream bs = new ByteArrayInputStream(content.getBytes());
+		  			dom = db.parse(bs);
+		  			
+		  			//get the root element
+		  			Element docEle = dom.getDocumentElement();
+
+		  			//get a nodelist of  elements
+		  			NodeList nl = docEle.getElementsByTagName("Employee");
+		  		}catch(ParserConfigurationException pce) {
+		  			pce.printStackTrace();
+		  		}catch(SAXException se) {
+		  			se.printStackTrace();
+		  		}catch(IOException ioe) {
+		  			ioe.printStackTrace();
+		  		}
+
+		      }
+		      else {
+		        // The requested book is NOT available for sale.
+		        reply.setPerformative(ACLMessage.REFUSE);
+		        reply.setContent("not-available");
+		      }
+		      myAgent.send(reply);
+		    }
+			  else {
+			    block();
+			  }
+		  }
+		}  // End of inner class 
+}

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Jarvis.Build" basedir="." default="deploy">
+
+    <property name="src.dir"     value="src"/>
+    <property name="lib.dir"     value="lib"/>
+
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+
+    <property name="main.host"     value="sstallbaumw7"/>
+
+    <property name="main-class"  value="oata.HelloWorld"/>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+    
+    <path id="project.class.path">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+        <pathelement path="${java.class.path}/"/>
+        <pathelement path="${additional.path}"/>
+      </path>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="setup">
+        <tstamp/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <!--
+        <echo message="${toString:project.class.path}"/> 
+        -->
+    </target>
+    
+    <target name="compile" depends="setup">
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}" 
+        	   verbose="off"
+        	includeAntRuntime="false"
+               classpathref="project.class.path"/>
+    </target>
+    
+    <target name="deploy" depends="compile">
+        <copy todir="../../Jarvis/classes">
+            <fileset dir="${classes.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="run" depends="deploy">
+        <java fork="true" 
+              classname="jade.Boot"
+              classpathref="project.class.path">
+            <arg value="-gui Jarvis1:net.stallbaum.jarvisagent.JarvisAgent"/>            
+        </java>
+    </target>
+
+    <target name="run-container">
+        <java fork="true" classname="jade.Boot">
+            <arg line="-container -host ${main.host} JAgent:net.stallbaum.jarvisagent.JarvisAgent"/>
+            <classpath>
+                <path refid="classpath"/>
+                <fileset dir="../../Jarvis/classes"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <target name="clean-build" depends="clean"/>
+
+    <target name="main" depends="clean,run"/>
+
+</project>

@@ -1,0 +1,29 @@
+/**
+ * 
+ */
+package net.stallbaum.jarvisagent;
+
+import jade.core.Agent;
+
+/**
+ * @author Sean
+ *
+ */
+public class PlayerAgent extends Agent {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1233712675363055824L;
+
+	/**
+	 * 
+	 */
+	public PlayerAgent() {
+		// TODO Auto-generated constructor stub
+	}
+
+	protected void setup() {
+		System.out.println("Starting PlayerAgent: " + getAID().getName());
+	}
+}
