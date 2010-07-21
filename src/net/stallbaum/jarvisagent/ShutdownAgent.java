@@ -9,6 +9,8 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
@@ -22,6 +24,7 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
  */
 public class ShutdownAgent extends TickerBehaviour implements
 		SecurityVocabulary {
+	
 	Behaviour behaviour = null;
 	JarvisAgent jAgent = null;
 	
@@ -37,7 +40,6 @@ public class ShutdownAgent extends TickerBehaviour implements
 			
 			// send a reply
 			// -------> Send security level change message
-			XMLCodec codex = new XMLCodec();
 			Ontology ontology = SecurityOntology.getInstance();
 			jAgent.getContentManager().registerOntology(ontology);
 			jAgent.getContentManager().registerLanguage(new XMLCodec());
@@ -51,13 +53,22 @@ public class ShutdownAgent extends TickerBehaviour implements
 			msg.setContent("Shutdown accepted");
 			myAgent.send(msg);
 			
+			//-------> Remove agent from DF
+			try{
+				DFService.deregister(jAgent);
+			}catch(FIPAException fe) {
+				System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - Unable to de-register agent: " + fe.getLocalizedMessage());
+			}
+			
+			//------> Remove Agent Behaviours
 			System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - Removing ServerCommBehaviour");
 			myAgent.removeBehaviour(behaviour);
+			
+			//------>Remove agent from container
 			try {
 				ContainerController cc = myAgent.getContainerController();
 				AgentController ac;
 				ac = cc.getAgent(myAgent.getLocalName());
-				//System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - About to kill myself");
 				ac.kill();
 			} catch (ControllerException e) {
 				// TODO Auto-generated catch block
