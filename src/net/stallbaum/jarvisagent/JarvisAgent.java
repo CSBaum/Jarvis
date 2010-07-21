@@ -20,6 +20,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
+import jade.util.Logger;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.ControllerException;
@@ -35,8 +36,10 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 	 */
 	private static final long serialVersionUID = -6400372757964918253L;
 
-	String[] serverCommands;
-	String[] playerCommands;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+	
+	protected String[] serverCommands;
+	protected String[] playerCommands;
 
 	protected String conversationId = "";
 	protected AID sender = null;
@@ -51,14 +54,14 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 	 * 
 	 */
 	public JarvisAgent() {
-		// TODO Auto-generated constructor stub
+		// TODO Auto-generated constructor stub");
 	}
 
 	/**
 	 * Method invoked when Agent adds behavior
 	 */
 	protected void setup(){
-		System.out.println("Starting JarvisAgent: " + getAID().getName());
+		logger.info("Starting JarvisAgent: " + getAID().getName());
 
 		// Register with the Container's Yellowbook service
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -71,6 +74,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			DFService.register(this, dfd);
 		} catch (FIPAException fe){
 			fe.printStackTrace();
+			logger.severe("Unable to register agent: " + fe.getLocalizedMessage());
 		}
 
 		// TODO Implement rest of agent start up code
@@ -94,14 +98,23 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
-		System.out.println("JarvisAgent " + getLocalName() + " terminating");
+		logger.info("JarvisAgent " + getLocalName() + " terminating");
 	}
 	
+	/**
+	 * Method invoked prior to the agent being moved from 1 container to another.
+	 * In this case, we are de-registering the agent from the DF so that Jarvis
+	 * does not use incorrect AID information to talk to the agent.
+	 */
 	protected void beforeMove() {
 		 try { DFService.deregister(this); }
          catch (Exception e) {}
 	}
 	
+	/**
+	 * Method invoked after doMove() is called on teh agent.
+	 * This specifically registers the agent with the DF with the correct AID
+	 */
 	protected void afterMove() {
 		// Register with the Container's Yellowbook service
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -114,6 +127,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			DFService.register(this, dfd);
 		} catch (FIPAException fe){
 			fe.printStackTrace();
+			logger.severe(getLocalName() + " - Unable to register agent: " + fe.getLocalizedMessage());
 		}
 	}
 	
@@ -124,7 +138,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			if (agentState != AGENT_ACTIVE){
 				previousAgentState = agentState;
 				agentState = AGENT_ACTIVE;
-				System.out.println(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
+				logger.fine(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
 			}
 			
 		}
@@ -133,7 +147,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			if (agentState != AGENT_STANDBY)  {
 				previousAgentState = agentState;
 				agentState = AGENT_STANDBY;
-				System.out.println(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
+				logger.fine(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
 			}
 		}
 		else if ((securityLevel == SECURITY_LEVEL_NETWORK_AGENTS_ONLY) && agentType == ROBOT_AGENT) {
@@ -141,7 +155,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			if (agentState != AGENT_STANDBY)  {
 				previousAgentState = agentState;
 				agentState = AGENT_STANDBY;
-				System.out.println(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
+				logger.fine(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
 			}
 		}
 		else if ((securityLevel == SECURITY_LEVEL_ROBOT_AGENTS_ONLY) && agentType == ROBOT_AGENT) {
@@ -149,13 +163,13 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			if (agentState != AGENT_ACTIVE)  {
 				previousAgentState = agentState;
 				agentState = AGENT_ACTIVE;
-				System.out.println(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
+				logger.fine(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
 			}
 		}
 		else if (securityLevel == SECURITY_LEVEL_ALL_ON){
 			previousAgentState = agentState;
 			agentState = AGENT_ACTIVE;
-			System.out.println(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
+			logger.fine(getLocalName()+ ": Setting agent statue to " + getAgentStateTxt());
 		}
 	}
 	
@@ -182,7 +196,9 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 			case AGENT_HALTING: 
 				state = "Halting";
 				break;
-			default: state = "Invalid State ... " + agentState;
+			default: 
+				state = "Invalid State ... " + agentState;
+				logger.warning("Detected an invalid agent state: " + agentState);
 		}
 		
 		return state;
