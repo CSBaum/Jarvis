@@ -97,6 +97,26 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		System.out.println("JarvisAgent " + getLocalName() + " terminating");
 	}
 	
+	protected void beforeMove() {
+		 try { DFService.deregister(this); }
+         catch (Exception e) {}
+	}
+	
+	protected void afterMove() {
+		// Register with the Container's Yellowbook service
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(getAID());
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("jarvis-agent-robot");
+		sd.setName("jarvis-system");
+		dfd.addServices(sd);
+		try {
+			DFService.register(this, dfd);
+		} catch (FIPAException fe){
+			fe.printStackTrace();
+		}
+	}
+	
 	protected void checkSecurityLevel(int securityLevel){
 		if ((securityLevel == SECURITY_LEVEL_NETWORK_AGENTS_ONLY) &&
 				(agentType == NETWORK_AGENT)) {
