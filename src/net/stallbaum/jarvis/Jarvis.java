@@ -35,6 +35,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
 import jade.lang.acl.ACLMessage;
+import jade.util.Logger;
 
 //import jess.*;
 
@@ -45,6 +46,7 @@ import jade.lang.acl.ACLMessage;
 public class Jarvis extends GuiAgent implements SecurityVocabulary{
 
 	private AID[] jarvisAgents = null;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
 	private static final long serialVersionUID = 4760582118511377080L;
 	
@@ -95,7 +97,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	 */
 	protected void setup(){
 		
-		System.out.println("Hello! Jarvis server agent: " + getAID().getName() + " is starting");
+		//System.out.println("Hello! Jarvis server agent: " + getAID().getName() + " is starting");
+		logger.info("Hello! Jarvis server agent: " + getAID().getName() + " is starting");
 		
 		// Process configuration information
 		
@@ -114,7 +117,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 										"WHERE a.UID = b.agent_id AND b.enabled = '1'");
 		    agentRS.last();
 		    numberOfRows = agentRS.getRow();
-		    System.out.println("Jarvis knows about: " + numberOfRows + " agents");
+		    logger.fine("Jarvis knows about: " + numberOfRows + " agents");
 		    agentRS.beforeFirst();
 		} catch (SQLException sex){
 			// handle any errors
@@ -123,9 +126,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			System.out.println("         SQLState: " + sex.getSQLState());
 			System.out.println("         VendorError: " + sex.getErrorCode());
 		}catch (Exception ex){
-			System.out.println("Unable to setup database: ");
-			System.out.println("        " + ex.getMessage());
-			System.out.println("        " + ex.getStackTrace());
+			logger.severe("Unable to setup database:\n\t" + ex.getMessage() + "\n\t"+ ex.getStackTrace());
 		}finally {
 		}
 		
@@ -140,25 +141,23 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			if (jarvisAgents != null){
 				System.out.println("Number of agents in array " + jarvisAgents.length);
 			} else {
-				System.out.println("There are no agent entries, we shuld rerun through the above code again ...");
+				logger.warning("There are no agent entries, we shuld rerun through the above code again ...");
 			}
 			
 			doWait(2000);
 			
 			// Register new behaviors for each agent
 			for (AID JAgent : jarvisAgents){
-				System.out.println("Processing: " + JAgent.getLocalName());
+				logger.fine("Processing: " + JAgent.getLocalName());
 				agentListing.add(JAgent);
 				addBehaviour(new JarvisAgentCommunication(this, 4000 , JAgent));
 			}
 			
 			//------> Added shutdown behaviour
 		} catch (NullPointerException nex) {
-			System.out.println("Error occured while running -> Jarvis Agent Setup");
-			System.out.println("Error: Null Pointer detected.");
+			logger.severe("Error occured while running -> Jarvis Agent Setup - Null Pointer detected.");
 		} catch (Exception ex){
-			System.out.println("Error occured while running -> Jarvis Agent Setup");
-			System.out.println("Error: " + ex.getMessage());
+			logger.severe("Error occured while running -> Jarvis Agent Setup -\n\t" + ex.getMessage());
 		}
 		
 		// Add system command listener
@@ -231,12 +230,12 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		try {
 			DFAgentDescription[] result = DFService.search(this, template);
 			
-			System.out.println("Found " + result.length + " agent(s) in the DF");
+			logger.fine("Found " + result.length + " agent(s) in the DF");
 			
 			if (result.length < 1) {
 				int inx = 0;
 				// Initialize ALL agents from RS
-				System.out.println("No Agents were found. Initializing all via WakeOnLan.");
+				logger.info("No Agents were found. Initializing all via WakeOnLan.");
 				jarvisAgents = new AID[rsCount];
 				while (agentRS.next()) {
 					agentName = agentRS.getString("name");
@@ -244,7 +243,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					agentHost = agentRS.getString("host");
 					agentPort = agentRS.getString("port");
 				
-					System.out.println("About to wake up -> " + agentName + 
+					logger.info("About to wake up -> " + agentName + 
 									   " on MAC -> " + agentMac + " with host of -> " +
 									   agentHost + " and a port of -> " + agentPort);
 					
@@ -258,7 +257,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				
 			} else if (result.length < rsCount){
 				boolean isMissing = true;
-				System.out.println("Found " + result.length + " jarvis agents out of " + rsCount + " agents in the db");
+				logger.info("Found " + result.length + " jarvis agents out of " + rsCount + " agents in the db");
 				jarvisAgents = new AID[rsCount];
 				while (agentRS.next()) {
 					isMissing = true;
@@ -269,7 +268,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					
 					for (int i = 0; i < rsCount; ++i) {
 						if (ignoreList.contains(result[i].getName())){
-							System.out.println("Agent found on ignore List ... skipping it ...");
+							logger.info("Agent found on ignore List ... skipping it ...");
 							isMissing = false;
 						} else {
 							if (agentName.equalsIgnoreCase(result[i].getName().getLocalName())){
@@ -279,7 +278,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						}
 					}
 					if (isMissing){
-						System.out.println("About to wake up -> " + agentName + 
+						logger.info("About to wake up -> " + agentName + 
 								   " on MAC -> " + agentMac + " with host of -> " +
 								   agentHost + " and a port of -> " + agentPort);
 						
@@ -292,7 +291,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			else {
 				// Everyone is up and running ... maybe 
 				//    ... verify valid agents
-				System.out.println("Found " + result.length + " jarvis agent(s)");
+				logger.info("Found " + result.length + " jarvis agent(s)");
 				jarvisAgents = new AID[rsCount];
 				while (agentRS.next()){
 					agentName = agentRS.getString("name");
@@ -300,7 +299,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					agentHost = agentRS.getString("host");
 					agentPort = agentRS.getString("port");
 					
-					System.out.println(getLocalName() + ": Agent Info" + 
+					logger.info(getLocalName() + ": Agent Info" + 
 									   "\n\tName:" + agentName + 
 									   "\n\tMAC:" + agentMac +
 									   "\n\tHost:" + agentHost + 
@@ -309,12 +308,12 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					for (int i = 0; i < result.length; ++i) {
 						if (agentName.equalsIgnoreCase(result[i].getName().getLocalName())){
 							jarvisAgents[i] = result[i].getName();
-							System.out.println(getLocalName() + ":Adding Agent --> " + result[i].getName().getLocalName());
+							logger.info(getLocalName() + ":Adding Agent --> " + result[i].getName().getLocalName());
 						}
 						else { 
 							// We need to throw an error and not add it to 
 							//     the AID array
-							System.out.println(getLocalName() + ":Found agent: " + 
+							logger.info(getLocalName() + ":Found agent: " + 
 											   result[i].getName().getLocalName() + 
 											   " is not in the database... ignoring it!");
 							//ignoreList.add(result[i].getName().toString());
@@ -325,6 +324,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			}
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
+			logger.severe("FIPA Exception - " + fe.getLocalizedMessage());
 		} catch (SQLException sex) {
 			System.out.println("SQLException: " + sex.getMessage());
 			System.out.println("SQLState: " + sex.getSQLState());
@@ -337,7 +337,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		// ----------------------------------------  Receive user command via the gui
 
 		command = ev.getType();
-		System.out.println("GuiEvent: " + command);
+		logger.finer("GuiEvent: " + command);
 		//if (systemState == SYSTEM_HALTING) {
 		//	//alertGui("Bye!");
 		//	doDelete();
@@ -345,13 +345,13 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		//}
 		if (command == SYSTEM_HALTING) {
 			systemState = SYSTEM_HALTING;
-			System.out.println(getLocalName() + ": GUI sent Shutdown command.");
+			logger.info(getLocalName() + ": GUI sent Shutdown command.");
 			alertGui(getSystemStateTxt());
 			//doDelete();
 			//System.exit(0);
 		}
 		else if (command == ADD_AGENT) {
-			System.out.println(getLocalName() + ": GUI has requested adding a new agent.");
+			logger.fine(getLocalName() + ": GUI has requested adding a new agent.");
 			// -------> Get parameters from event 
 			
 			// -------> Insert data into appropriate tables
@@ -361,7 +361,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			// -------> Add agent communication behavior
 		}
 		else if (command == SECURITY_LEVEL_OFF){
-			System.out.println(getLocalName() + ": GUI sent Security Off command.");
+			logger.fine(getLocalName() + ": GUI sent Security Off command.");
 		
 			// -------> Need to update the system status to standby
 			lastSystemState = systemState;
@@ -371,15 +371,15 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			// -------> Send out messages to all agents
 			lastSecurityLevel = securityLevel;
 			securityLevel = SECURITY_LEVEL_OFF; 
-			System.out.println(getLocalName() + ": Security Level - " + securityLevel);
-			System.out.println(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
+			logger.info(getLocalName() + ": Security Level - " + securityLevel);
+			logger.info(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
 			
 			// -------> Add a run once behaviour that sleeps for 10 seconds 
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
 		else if (command == SECURITY_LEVEL_NETWORK_AGENTS_ONLY){
-			System.out.println(getLocalName() + ": GUI sent Security Network Agents Only command.");
+			logger.fine(getLocalName() + ": GUI sent Security Network Agents Only command.");
 			
 			// -------> Update System State
 			lastSystemState = systemState;
@@ -389,15 +389,15 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			// -------> Update Security Level
 			lastSecurityLevel = securityLevel;
 			securityLevel = SECURITY_LEVEL_NETWORK_AGENTS_ONLY; 
-			System.out.println(getLocalName() + ": Security Level - " + securityLevel);
-			System.out.println(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
+			logger.info(getLocalName() + ": Security Level - " + securityLevel);
+			logger.info(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
 			
 			// -------> Add a run once behaviour that sleeps for 10 seconds 
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
 		else if (command == SECURITY_LEVEL_ROBOT_AGENTS_ONLY){
-			System.out.println(getLocalName() + ": GUI sent Security Robot Agents Only command.");
+			logger.fine(getLocalName() + ": GUI sent Security Robot Agents Only command.");
 			
 			lastSystemState = systemState;
 			systemState = SYSTEM_SECURITY_ROBOTONLY;
@@ -405,15 +405,15 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			
 			lastSecurityLevel = securityLevel;
 			securityLevel = SECURITY_LEVEL_ROBOT_AGENTS_ONLY; 
-			System.out.println(getLocalName() + ": Security Level - " + securityLevel);
-			System.out.println(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
+			logger.info(getLocalName() + ": Security Level - " + securityLevel);
+			logger.info(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
 			
 			// -------> Add a run once behaviour that sleeps for 10 seconds 
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
 		else if (command == SECURITY_LEVEL_ALL_ON){
-			System.out.println(getLocalName() + ": GUI sent Security On command.");
+			logger.fine(getLocalName() + ": GUI sent Security On command.");
 			
 			lastSystemState = systemState;
 			systemState = SYSTEM_SECURITY_ALL;
@@ -421,15 +421,15 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			
 			lastSecurityLevel = securityLevel;
 			securityLevel = SECURITY_LEVEL_ALL_ON; 
-			System.out.println(getLocalName() + ": Security Level - " + securityLevel);
-			System.out.println(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
+			logger.info(getLocalName() + ": Security Level - " + securityLevel);
+			logger.info(getLocalName() + ": Last Security Level - " + lastSecurityLevel);
 			
 			// -------> Add a run once behaviour that sleeps for 10 seconds 
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
 		else if (command == SYSTEM_RESET) {
-			System.out.println(getLocalName() + ": GUI sent System Reset command.");
+			logger.info(getLocalName() + ": GUI sent System Reset command.");
 		}
 	}
 
@@ -439,11 +439,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		jGui.alertResponse(response);
 	}
 
-	//void resetStatusGui() {
-		// -----------------------  Reset the status of the gui
-		//myGui.resetStatus();
-	//}
-	
 	/*/--------------------------- Utility methods ----------------------------//
 	protected void lookupServer() {
 		// ---------------------  Search in the DF to retrieve the server AID
@@ -485,9 +480,11 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			msg.addReceiver(server);
 			send(msg);
 			alertGui("Contacting server... Please wait!");
-			//addBehaviour(new WaitServerResponse(this));
 		}
-		catch (Exception ex) { ex.printStackTrace(); }
+		catch (Exception ex) { 
+			logger.warning("Unable to send message to " + server.getName() + 
+					" - " + ex.getLocalizedMessage()); 
+		}
 	}
 
 	/**
@@ -521,7 +518,9 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				break;
 			case SYSTEM_ALARM:
 				state = "System Alarm!";
-			default: state = "Invalid State ... " + systemState;
+			default: 
+				state = "Invalid State ... " + systemState;
+				logger.warning("Invalid System State - " + systemState);
 		}
 		
 		return state;
