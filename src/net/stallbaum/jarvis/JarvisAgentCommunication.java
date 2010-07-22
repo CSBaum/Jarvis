@@ -6,7 +6,6 @@ package net.stallbaum.jarvis;
 import java.io.IOException;
 import java.util.Random;
 
-import jade.content.abs.AbsObject;
 import jade.content.lang.xml.XMLCodec;
 import jade.content.onto.Ontology;
 import jade.core.AID;
@@ -15,12 +14,11 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
+import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.AgentInitialization;
 import net.stallbaum.jarvis.util.ontologies.Location;
-import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
-import net.stallbaum.jarvis.util.ontologies.SecurityLevel;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.SystemMessage;
@@ -32,6 +30,11 @@ import net.stallbaum.jarvis.util.ontologies.SystemMessage;
 public class JarvisAgentCommunication extends TickerBehaviour implements
 		SecurityVocabulary {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5601350228932185923L;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	private String convId = "";
 	private AID targetAID;
 	private int tickCount = 0;
@@ -54,8 +57,8 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 		// Check if there is any agent commands in the queue
 		//     that need processing and continue, if not skip
 		//     the cycle.
-		System.out.println("JarvisAgentCommunication with: " + targetAID.getLocalName());
-		System.out.println(myAgent.getLocalName() + ": state: " + jarvis.getSystemStateTxt());
+		logger.info("JarvisAgentCommunication with: " + targetAID.getLocalName());
+		System.out.println("State: " + jarvis.getSystemStateTxt());
 		
 		//------> Handle System halt messages,etc
 		switch(jarvis.systemState) {
@@ -69,9 +72,8 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				break;
 			case SYSTEM_HALTING:
 				if (!agentNotified) {
-					System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - System halting ... ");
-		
-					XMLCodec codex = new XMLCodec();
+					logger.warning(getBehaviourName() + " - System halting ... ");
+					
 					Ontology ontology = SecurityOntology.getInstance();
 					myAgent.getContentManager().registerOntology(ontology);
 					myAgent.getContentManager().registerLanguage(new XMLCodec());
@@ -86,30 +88,27 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 					try {
 						msg.setContentObject(sysMsg);
 					} catch (IOException e) {
-						System.out.println(myAgent.getLocalName() + ": Unable to add System Message object to reply.");
-						System.out.println(e.getLocalizedMessage());
+						logger.severe("Unable to add System Message object to reply to " + targetAID.getLocalName() + ".");
+						logger.severe(e.getLocalizedMessage());
 						block();
 					}
 		
 					myAgent.send(msg);
-					System.out.println(myAgent.getLocalName() +": Sent system halt message to " + targetAID.getLocalName());
+					logger.info(myAgent.getLocalName() +": Sent system halt message to " + targetAID.getLocalName());
 					agentNotified = true;
-					//finished = true;
-					//stop();
 				}
 				else
 				{
-					System.out.println(myAgent.getLocalName() + ": Waiting to shutdown...");
+					logger.info(myAgent.getLocalName() + ": Waiting to shutdown...");
 				}
 				break;
 			default:
 		}
 		
 		if (jarvis.securityLevel != jarvis.lastSecurityLevel){
-			System.out.println(getBehaviourName() + ": Detected security level difference. ");
+			logger.config(getBehaviourName() + ": Detected security level difference. ");
 			
 			// -------> Send security level change message
-			XMLCodec codex = new XMLCodec();
 			Ontology ontology = SecurityOntology.getInstance();
 			jarvis.getContentManager().registerOntology(ontology);
 			jarvis.getContentManager().registerLanguage(new XMLCodec());
@@ -127,47 +126,16 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			try {
 				msg.setContentObject(sysMsg);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.severe("Unable to attach system message for " + targetAID.getLocalName() +  " - "  + e.getLocalizedMessage());
 			}
 			
 			myAgent.send(msg);
-			System.out.println(myAgent.getLocalName() +": Send Security Level change to " + targetAID.getLocalName());
+			logger.config("Sent Security Level change to " + targetAID.getLocalName());
 		}
-		
-		/*if (jarvis.systemState == SYSTEM_HALTING){
-			if (!agentNotified) {
-				// -------> Send security level change message
-				XMLCodec codex = new XMLCodec();
-				Ontology ontology = SecurityOntology.getInstance();
-				jarvis.getContentManager().registerOntology(ontology);
-				jarvis.getContentManager().registerLanguage(new XMLCodec());
-				
-				ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-				msg.setSender(jarvis.getAID());
-				msg.addReceiver(targetAID);
-				msg.setLanguage(XMLCodec.NAME);
-				msg.setConversationId(convId);
-			
-				SystemMessage sysMsg = new SystemMessage();
-				sysMsg.setMsgID(SYSTEM_HALT);
-				
-				try {
-					msg.setContentObject(sysMsg);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				myAgent.send(msg);
-				System.out.println(myAgent.getLocalName() +": Sent System Halt message to agent " + targetAID.getLocalName());
-			}
-		}*/
 		
 		// ---------------- Test & security level cleanup
 		if (tickCount % 10 == 0){
 			if (!agentInitialized){
-				XMLCodec codex = new XMLCodec();
 				Ontology ontology = SecurityOntology.getInstance();
 				jarvis.getContentManager().registerOntology(ontology);
 				jarvis.getContentManager().registerLanguage(new XMLCodec());
@@ -198,8 +166,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 	
 				myAgent.send(msg);
-				System.out.println(myAgent.getLocalName() +": Send Robot Object to " + targetAID.getLocalName());
-				//System.out.println(myAgent.getLocalName() +": Message was: " + msg);
+				logger.info("Send Robot Object to " + targetAID.getLocalName());
 			}
 		}
 
@@ -216,7 +183,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			if (performative == ACLMessage.FAILURE){
 				try {
 					Problem problem = (Problem)msg.getContentObject();
-					System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + ": An error occured with Agent, " + msg.getSender().getName()
+					logger.warning(getBehaviourName() + ": An error occured with Agent, " + msg.getSender().getName()
 									   + "\n\t: Error Code: " + problem.getNum()
 									   + "\n\t: Error Message: " + problem.getMsg());
 				} catch (UnreadableException ure) {
@@ -225,16 +192,16 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 			}
 			else if (performative == ACLMessage.CONFIRM){
-				System.out.println(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + " has confirmed last message success.");
+				logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + " has confirmed last message success.");
 				agentInitialized = true;
 				jarvis.addActiveAgent(myAgent.getAID());
-				System.out.println(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
+				logger.config(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
 				// Based on system state & content, do something :)
 			}
 			else if(performative == ACLMessage.AGREE) {
-				System.out.println(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
+				logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
 				jarvis.agentListingSet.add(msg.getSender());
-				System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
+				logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
 				agentNotified = true;
 			}
 			else if(performative == ACLMessage.INFORM){

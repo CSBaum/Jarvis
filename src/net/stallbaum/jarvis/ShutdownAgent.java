@@ -3,9 +3,9 @@
  */
 package net.stallbaum.jarvis;
 
-import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
+import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 
 /**
@@ -15,6 +15,11 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 public class ShutdownAgent extends TickerBehaviour implements
 		SecurityVocabulary {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2337711331618263328L;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	Jarvis jarvis = null;
 	int agentCount = 0;
 	
@@ -38,7 +43,7 @@ public class ShutdownAgent extends TickerBehaviour implements
 		
 		if (jarvis.systemState == SYSTEM_HALTING) {
 			if (jarvis.agentListingSet.size() == jarvis.activeAgentsSet.size()){
-				System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - Shutting down");
+				logger.warning(myAgent.getLocalName() + ":" + getBehaviourName() + " - Shutting down");
 				jarvis.takedown();
 				myAgent.doDelete();
 				System.exit(0);

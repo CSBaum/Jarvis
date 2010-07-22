@@ -7,8 +7,8 @@ import java.util.Date;
 
 import jade.core.Agent;
 
-import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.WakerBehaviour;
+import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 
 /**
@@ -18,7 +18,12 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 public class SecurityResetBehaviour extends WakerBehaviour implements
 		SecurityVocabulary {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7528360941079461920L;
 	private Jarvis jarvis = null;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
 	public SecurityResetBehaviour(Agent a, Date wakeupDate) {
 		super(a, wakeupDate);
@@ -36,7 +41,7 @@ public class SecurityResetBehaviour extends WakerBehaviour implements
 	@Override
 	public void onWake() {
 		jarvis.lastSecurityLevel = jarvis.securityLevel;
-		System.out.println(getBehaviourName() + ": Reseting Security Levels");
+		logger.finer(getBehaviourName() + ": Reseting Security Levels");
 	}
 
 }
