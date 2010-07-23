@@ -47,6 +47,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 
 	private AID[] jarvisAgents = null;
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+	//Testing
 	
 	private static final long serialVersionUID = 4760582118511377080L;
 	
