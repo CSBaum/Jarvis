@@ -73,6 +73,10 @@ public class PlayerAgent extends Agent implements SecurityVocabulary {
 	}
 
 	protected void setup() {
+		
+	}
+	
+	protected void setup2() {
 		System.out.println("Starting PlayerAgent: " + getAID().getName());
 
 		// We need to setup behavior to listen for messages from controlling 
