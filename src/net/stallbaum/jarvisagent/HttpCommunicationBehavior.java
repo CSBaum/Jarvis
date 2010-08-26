@@ -76,6 +76,7 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 			entity = response.getEntity();
 			String responseBody = convertStreamToString(entity.getContent());
 			if (entity != null) {
+				System.out.println("Response Status: " + response.getStatusLine());
 				System.out.println("Response content length: " + responseBody.length());
 				System.out.println("Response content type: " + entity.getContentType());
 				System.out.println("Response:\n" + responseBody);

@@ -5,6 +5,7 @@ package net.stallbaum.jarvis;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,8 +21,11 @@ import java.util.Vector;
 
 import net.stallbaum.jarvis.gui.MainFrame;
 import net.stallbaum.jarvis.util.WakeOnLan;
+import net.stallbaum.jarvis.util.ontologies.Motor;
+import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.Sensor;
 
 import jade.content.AgentAction;
 import jade.content.lang.Codec;
@@ -46,6 +51,7 @@ import jade.util.Logger;
 public class Jarvis extends GuiAgent implements SecurityVocabulary{
 
 	private AID[] jarvisAgents = null;
+	private Hashtable<AID, Robot> jarvisAgents2 = new Hashtable<AID,Robot>();
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	//Testing
 	
@@ -97,8 +103,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	 *  NOTE: Avoid constructor since framework may not be initialized in time
 	 */
 	protected void setup(){
-		
-		//System.out.println("Hello! Jarvis server agent: " + getAID().getName() + " is starting");
 		logger.info("Hello! Jarvis server agent: " + getAID().getName() + " is starting");
 		
 		// Process configuration information
@@ -113,7 +117,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			                                   "jarvis","stark");
 			
 			stmt = conn.createStatement();
-		    agentRS = stmt.executeQuery("SELECT a.UID, a.name, a.class, b.MAC, b.host, b.port " +
+		    agentRS = stmt.executeQuery("SELECT a.UID, a.name, a.class, a.type, b.MAC, b.host, b.port, b.robot_id " +
 										"FROM agents a, containers b " + 
 										"WHERE a.UID = b.agent_id AND b.enabled = '1'");
 		    agentRS.last();
@@ -150,8 +154,9 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			// Register new behaviors for each agent
 			for (AID JAgent : jarvisAgents){
 				logger.fine("Processing: " + JAgent.getLocalName());
+				Robot r = jarvisAgents2.get(JAgent);
 				agentListing.add(JAgent);
-				addBehaviour(new JarvisAgentCommunication(this, 4000 , JAgent));
+				addBehaviour(new JarvisAgentCommunication(this, 4000 , JAgent, r));
 			}
 			
 			//------> Added shutdown behaviour
@@ -219,9 +224,13 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		System.out.println("============================");
 
 		String agentName = "";
+		String agentType = "";
 		String agentMac = "";
 		String agentHost = "";
 		String agentPort = "";
+		Integer robotId;
+		
+		Robot robot = null;
 		
 		// Update the list of JAgents agents
 		DFAgentDescription template = new DFAgentDescription();
@@ -240,18 +249,34 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				jarvisAgents = new AID[rsCount];
 				while (agentRS.next()) {
 					agentName = agentRS.getString("name");
+					agentType = agentRS.getString("type");
 					agentMac = agentRS.getString("MAC");
 					agentHost = agentRS.getString("host");
 					agentPort = agentRS.getString("port");
-				
-					logger.info("About to wake up -> " + agentName + 
-									   " on MAC -> " + agentMac + " with host of -> " +
-									   agentHost + " and a port of -> " + agentPort);
+					robotId = agentRS.getInt("robot_id");
 					
-					WakeOnLan wol = new WakeOnLan();
-					wol.wakeUp(agentHost, agentMac);
+					logger.info(getLocalName() + ": Agent Info" + 
+							   "\n\tName:" + agentName +
+							   "\n\tType: " + agentType + 
+							   "\n\tMAC:" + agentMac +
+							   "\n\tHost:" + agentHost + 
+							   "\n\tPort:" + agentPort +
+							   "\n\tRobot Id:" + robotId);
+
+					if (agentType.equalsIgnoreCase("robot")){
+						logger.info("About to wake up -> " + agentName);
+					
+						WakeOnLan wol = new WakeOnLan();
+						wol.wakeUp(agentHost, agentMac);
+						
+						robot = generateRobot(robotId);
+					}
+					else {
+						// do network agenit initialization code here
+					}
 					
 					// Build AID name for the newly woken up name
+					jarvisAgents2.put(new AID(agentName, false), robot);
 					jarvisAgents[inx] = new AID(agentName, false);
 					inx++;
 				}
@@ -263,9 +288,19 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				while (agentRS.next()) {
 					isMissing = true;
 					agentName = agentRS.getString("name");
+					agentType = agentRS.getString("type");
 					agentMac = agentRS.getString("MAC");
 					agentHost = agentRS.getString("host");
 					agentPort = agentRS.getString("port");
+					robotId = agentRS.getInt("robot_id");
+					
+					logger.info(getLocalName() + ": Agent Info" + 
+							   "\n\tName:" + agentName +
+							   "\n\tType: " + agentType + 
+							   "\n\tMAC:" + agentMac +
+							   "\n\tHost:" + agentHost + 
+							   "\n\tPort:" + agentPort +
+							   "\n\tRobot Id:" + robotId);
 					
 					for (int i = 0; i < rsCount; ++i) {
 						if (ignoreList.contains(result[i].getName())){
@@ -273,19 +308,28 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 							isMissing = false;
 						} else {
 							if (agentName.equalsIgnoreCase(result[i].getName().getLocalName())){
+								if (robotId != null) {
+									robot = generateRobot(robotId);
+									jarvisAgents2.put(result[i].getName(), robot);
+								}
 								jarvisAgents[i] = result[i].getName();
 								isMissing = false;
 							}
 						}
 					}
 					if (isMissing){
-						logger.info("About to wake up -> " + agentName + 
-								   " on MAC -> " + agentMac + " with host of -> " +
-								   agentHost + " and a port of -> " + agentPort);
-						
-						// call Wake on Lan class to wake up container
-						WakeOnLan wol = new WakeOnLan();
-						wol.wakeUp(agentHost, agentMac);
+						if (agentType.equalsIgnoreCase("robot")) {
+							logger.info("About to wake up -> " + agentName + 
+									   " on MAC -> " + agentMac + " with host of -> " +
+									   agentHost + " and a port of -> " + agentPort);
+							
+							// call Wake on Lan class to wake up container
+							WakeOnLan wol = new WakeOnLan();
+							wol.wakeUp(agentHost, agentMac);
+						}
+						else {
+							// do network agent initialization code here
+						}
 					}
 				}
 			}
@@ -296,18 +340,26 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				jarvisAgents = new AID[rsCount];
 				while (agentRS.next()){
 					agentName = agentRS.getString("name");
+					agentType = agentRS.getString("type");
 					agentMac = agentRS.getString("MAC");
 					agentHost = agentRS.getString("host");
 					agentPort = agentRS.getString("port");
+					robotId = agentRS.getInt("robot_id");
 					
 					logger.info(getLocalName() + ": Agent Info" + 
-									   "\n\tName:" + agentName + 
+									   "\n\tName:" + agentName +
+									   "\n\tType: " + agentType + 
 									   "\n\tMAC:" + agentMac +
 									   "\n\tHost:" + agentHost + 
-									   "\n\tPort:" + agentPort);
+									   "\n\tPort:" + agentPort +
+									   "\n\tRobot Id:" + robotId);
 					
 					for (int i = 0; i < result.length; ++i) {
 						if (agentName.equalsIgnoreCase(result[i].getName().getLocalName())){
+							if (robotId != null){
+								robot = generateRobot(robotId);
+								jarvisAgents2.put(result[i].getName(), robot);
+							}
 							jarvisAgents[i] = result[i].getName();
 							logger.info(getLocalName() + ":Adding Agent --> " + result[i].getName().getLocalName());
 						}
@@ -525,5 +577,262 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		}
 		
 		return state;
+	}
+	
+	private Robot generateRobot(Integer robotId) {
+		Robot robot = new Robot();
+		String query = "Select * from robots where UID = " + robotId;
+		
+		String name = "";
+		String cfgFile = "";
+		String sensorList = "";
+		Integer tireType;
+		Integer tireCount;
+		Integer motorType;
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+			
+			while(rset.next()){
+				// Get all the data out of the result set row
+				name = rset.getString("name");
+				cfgFile = rset.getString("cfgFile");
+				sensorList = rset.getString("sensors");
+				tireCount = rset.getInt("tireCount");
+				tireType = rset.getInt("tireType");
+				motorType = rset.getInt("motorType");
+				
+				// Fill in core robot info
+				robot.setName(name);
+				robot.setCfgFile(cfgFile);
+				robot.setTireCount(tireCount);
+				
+				// Check if sensor lists are empty, if not call sensor lookup
+				if (sensorList != null){
+					// Need to sort out where all the sensors are located ...
+					String front_center, front_left, front_right;
+					String left_front, left_middle, left_back;
+					String right_front, right_middle, right_back;
+					String back_center, back_left, back_right;
+					
+					//----------- Look for front facing sensors and add them
+					front_center = rset.getString("sensors-front-center");
+					if (front_center != null){
+						String[] sensorIds = front_center.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding front center sensor --> " + sensor.toString());
+							robot.setFrontCenterSensor(sensor);
+						}
+					}
+					
+					front_left = rset.getString("sensors-front-left");
+					if (front_left != null){
+						String[] sensorIds = front_left.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding front left sensor --> " + sensor.toString());
+							robot.setFrontLeftSensor(sensor);
+						}
+					}
+					
+					front_right = rset.getString("sensors-front-right");
+					if (front_right != null){
+						String[] sensorIds = front_right.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding front right sensor --> " + sensor.toString());
+							robot.setFrontRightSensor(sensor);
+						}
+					}
+					
+					//------- Look for left facing sensors and add them
+					left_front = rset.getString("sensors-left-front");
+					if (left_front != null){
+						String[] sensorIds = left_front.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding left front sensor --> " + sensor.toString());
+							robot.setLeftFrontSensor(sensor);
+						}
+					}
+					
+					left_middle = rset.getString("sensors-left-middle");
+					if (left_middle != null){
+						String[] sensorIds = left_middle.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding left middle sensor --> " + sensor.toString());
+							robot.setLeftMiddleSensor(sensor);
+						}
+					}
+					
+					left_back = rset.getString("sensors-left-back");
+					if (left_back != null){
+						String[] sensorIds = left_back.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding left back sensor --> " + sensor.toString());
+							robot.setFrontRightSensor(sensor);
+						}
+					}
+					
+					//-------  Look for right facing sensors and add them
+					right_front = rset.getString("sensors-right-front");
+					if (right_front != null){
+						String[] sensorIds = right_front.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding right front sensor --> " + sensor.toString());
+							robot.setRightFrontSensor(sensor);
+						}
+					}
+					
+					right_middle = rset.getString("sensors-right-middle");
+					if (right_middle != null){
+						String[] sensorIds = right_middle.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding right middle sensor --> " + sensor.toString());
+							robot.setRightMiddleSensor(sensor);
+						}
+					}
+					
+					right_back = rset.getString("sensors-right-back");
+					if (right_back != null){
+						String[] sensorIds = right_back.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding right back sensor --> " + sensor.toString());
+							robot.setRightBackSensor(sensor);
+						}
+					}
+					
+					//------ Look for back facing sensors and add them
+					back_center = rset.getString("sensors-back-center");
+					if (back_center != null){
+						String[] sensorIds = back_center.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding back center sensor --> " + sensor.toString());
+							robot.setBackCenterSensor(sensor);
+						}
+					}
+					
+					back_left = rset.getString("sensors-back-left");
+					if (back_left != null){
+						String[] sensorIds = back_left.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding back left sensor --> " + sensor.toString());
+							robot.setBackLeftSensor(sensor);
+						}
+					}
+					
+					back_right = rset.getString("sensors-back-right");
+					if (back_right != null){
+						String[] sensorIds = back_right.split(",");
+						for(String sensorId: sensorIds) {
+							Sensor sensor = lookupSensor(new Integer(sensorId));
+							logger.info("Adding back right sensor --> " + sensor.toString());
+							robot.setBackRightSensor(sensor);
+						}
+					}
+				}
+				else {
+					// No sensors defined
+				}
+				
+				Motor motor = lookupMotor(motorType);
+				robot.setMotorType(motor);
+			}
+			
+		} catch (SQLException e) {
+			logger.severe("Unable to lookup robot(" + robotId + "). Error Code: " + 
+						  e.getErrorCode() + "\nError Msg: " + 
+						  e.getLocalizedMessage());
+		}
+		
+		logger.info("Constructed this robot object --> " + robot);
+		
+		return robot;
+	}
+	
+	private Sensor lookupSensor(Integer sensorId){
+		Sensor sensor = new Sensor();
+		String name = "";
+		String description = "";
+		String type = "";
+		Integer refreshRate;
+		String fieldOfView = "";
+		String resolution = "";
+		String minRange = "";
+		String maxRange = "";
+		
+		String query = "SELECT * FROM sensors WHERE UID = " + sensorId;
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+			
+			while (rset.next()){
+				name = rset.getString("name");
+				description = rset.getString("description");
+				type = rset.getString("type");
+				refreshRate = rset.getInt("refreshRate");
+				fieldOfView = rset.getString("fieldOfView");
+				resolution = rset.getString("resolution");
+				minRange = rset.getString("minRange");
+				maxRange = rset.getString("maxRange");
+				
+				sensor.setName(name);
+
+				//sensor.setType(type);
+				
+				if (description != null)
+					sensor.setDescription(description);
+				
+				if (refreshRate != null) 
+					sensor.setCycle(refreshRate);
+			}
+			
+		} catch (SQLException e) {
+			logger.severe("Unable to query for Sensor ID: " + sensorId);
+			sensor = null;
+		}
+		
+		return sensor;
+	}
+	
+	private Motor lookupMotor(Integer _id) {
+		Motor motor = new Motor();
+		String name;
+		String gearRatio;
+		Integer rpm;
+		String torque;
+		
+		String query = "SELECT * FROM robot_motors WHERE UID = " + _id;
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+			
+			while(rset.next()){
+				name = rset.getString("name");
+				gearRatio = rset.getString("gear_ratio");
+				rpm = rset.getInt("rpm");
+				torque = rset.getString("torque");
+				
+				motor.setName(name);
+				motor.setGearRatio(gearRatio);
+				motor.setRpm(rpm);
+				motor.setTorque(torque);
+			}
+		} catch (SQLException e) {
+			logger.severe("Unable to lookup motor id (" + _id + ").\n" + e.getLocalizedMessage());
+			motor = null;
+		}
+		return motor;
 	}
 }

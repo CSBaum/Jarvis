@@ -124,7 +124,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								
 								// Initialize Player / Robot Agent based on info
 								Robot robot = ai.getRobot();
-								System.out.println(myAgent.getLocalName() + ": Robot Information: " + robot.getName());
+								System.out.println(myAgent.getLocalName() + ": Robot Information: " + robot.toString());
 								
 								// Change Agent state to Standby
 								jAgent.agentState = AGENT_STANDBY;

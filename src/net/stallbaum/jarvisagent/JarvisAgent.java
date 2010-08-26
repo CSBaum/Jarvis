@@ -86,8 +86,8 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		addBehaviour(new ShutdownAgent(this, 250, sbc));
 
 		// Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
-		System.out.println("Adding HTTP client check");
-		addBehaviour(new HttpCommunicationBehavior());
+		//System.out.println("Adding HTTP client check");
+		//addBehaviour(new HttpCommunicationBehavior());
 	}
 
 	/**

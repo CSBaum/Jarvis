@@ -12,6 +12,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import net.stallbaum.jarvis.util.ontologies.Problem;
+import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 
 /**
@@ -94,6 +95,28 @@ public class AgentPlayerCommBehavior extends TickerBehaviour implements
 					System.out.println(npe.getLocalizedMessage());
 					block();
 				}
+			}
+			
+			// Now we need ot sort through the various agent states :)
+			switch (pAgent.agentState) {
+				case AGENT_INITIALIZING:
+					if (contentObj instanceof Robot){
+						
+					}
+					else {
+						
+					}
+					pAgent.isInitialized = true;
+					break;
+				case AGENT_HALTING:
+					// Reply that the agent is shutting down ...
+					//    htis might not complete due to the fact that things are shutting down ..
+					reply.setPerformative(ACLMessage.AGREE);
+					reply.setContent("0: Agent already halting");
+					break;
+				case AGENT_STANDBY:
+					break;
+				default:
 			}
 		}
 		else {

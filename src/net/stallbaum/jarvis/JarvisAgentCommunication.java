@@ -41,15 +41,18 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 	private boolean agentInitialized = false;
 	private boolean agentNotified = false;
 	
+	private Robot robot;
+	
 	private Jarvis jarvis = null;
 	
 	private boolean finished = false;
 	
-	public JarvisAgentCommunication(Agent a, long period, AID _AID) {
+	public JarvisAgentCommunication(Agent a, long period, AID _AID, Robot _robot) {
 		super(a, period);
 		jarvis = (Jarvis)a;
 		targetAID = _AID;
 		convId = genCID();
+		robot = _robot;
 	}
 
 	@Override
@@ -145,17 +148,12 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				msg.addReceiver(targetAID);
 				msg.setLanguage(XMLCodec.NAME);
 				msg.setConversationId(convId);
-	
-				Robot r1 = new Robot();
-				r1.setName("Roomba1");
-				r1.setHasAudio(false);
-				r1.setHasSonar(false);
-				
+
 				Location loc = new Location();
 				
 				AgentInitialization ai = new AgentInitialization();
 				ai.setAgentType(ROBOT_AGENT);
-				ai.setRobot(r1);
+				ai.setRobot(robot);
 				ai.setLoc(loc);
 	
 				try {

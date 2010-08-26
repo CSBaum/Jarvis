@@ -38,7 +38,8 @@
         <javac srcdir="${src.dir}" 
                destdir="${classes.dir}" 
         	   verbose="off"
-        	includeAntRuntime="false"
+        	   debug="true"
+        	   includeAntRuntime="false"
                classpathref="project.class.path"/>
     </target>
 	<target name="compile-debug" depends="setup">
