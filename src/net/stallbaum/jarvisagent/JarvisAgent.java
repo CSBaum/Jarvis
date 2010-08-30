@@ -38,9 +38,11 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
+	//-----> Command variables
 	protected String[] serverCommands;
 	protected String[] playerCommands;
 
+	//-----> COmmunication variables
 	protected String conversationId = "";
 	protected AID sender = null;
 
@@ -48,7 +50,10 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 	protected int agentState = AGENT_INITIALIZING;
 	protected int previousAgentState = AGENT_INITIALIZING;
 	
+	//-----> Agent configuration information
 	protected int agentType;
+	protected Robot agentRobot;
+	protected int agentSensorCount = 0;
 
 	/**
 	 * 
@@ -67,6 +72,17 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
+		/*switch(agentType){
+			case ROBOT_AGENT: sd.setType("jarvis-agent-robot");
+							  break;
+			case NETWORK_AGENT: sd.setType("jarvis-agent-network");
+								break;
+			case REMOTE_AGENT: sd.setType("jarvis-agent-remote");
+							   break;
+			default: logger.severe("Invalid AgentType detected --> " 
+								   + agentType + ".  Setting agent status to shutdown.");
+					 agentState = AGENT_HALTING;
+		}*/
 		sd.setType("jarvis-agent-robot");
 		sd.setName("jarvis-system");
 		dfd.addServices(sd);
@@ -79,15 +95,16 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 
 		// TODO Implement rest of agent start up code
 
-		// Add JarvisCommBehahvior
+		//----> Add JarvisCommBehahvior
 		ServerCommunicationBehavior sbc = new ServerCommunicationBehavior(this, 500);
 		addBehaviour(sbc);
 		
+		//-----> Add Shutdown Communication behavior
 		addBehaviour(new ShutdownAgent(this, 250, sbc));
 
-		// Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
+		//--->Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
 		//System.out.println("Adding HTTP client check");
-		//addBehaviour(new HttpCommunicationBehavior());
+		//addBehaviour(new HttpCommunicationBehavior(this));
 	}
 
 	/**
@@ -122,7 +139,17 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
-		sd.setType("jarvis-agent-robot");
+		switch(agentType){
+		case ROBOT_AGENT: sd.setType("jarvis-agent-robot");
+						  break;
+		case NETWORK_AGENT: sd.setType("jarvis-agent-network");
+							break;
+		case REMOTE_AGENT: sd.setType("jarvis-agent-remote");
+						   break;
+		default: logger.severe("Invalid AgentType detected --> " 
+							   + agentType + ".  Setting agent status to shutdown.");
+				 agentState = AGENT_HALTING;
+	}
 		sd.setName("jarvis-system");
 		dfd.addServices(sd);
 		try {

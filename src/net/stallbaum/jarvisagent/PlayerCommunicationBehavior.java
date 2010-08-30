@@ -7,6 +7,8 @@ import java.util.Random;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 
@@ -14,11 +16,12 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
  * @author sean
  *
  */
-public class PlayerCommunicationBehavior extends CyclicBehaviour implements
+public class PlayerCommunicationBehavior extends TickerBehaviour implements
 		SecurityVocabulary {
 
 	JarvisAgent jAgent = null;
-
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+	
 	protected int cidCnt = 0;
 	String cidBase ;
 	
@@ -27,19 +30,19 @@ public class PlayerCommunicationBehavior extends CyclicBehaviour implements
 	
 	String playerConversationId = "";
 	
-	protected PlayerCommunicationBehavior(Agent a) {
-		super();
+	protected PlayerCommunicationBehavior(Agent a, long period) {
+		super(a, period);
 		jAgent = (JarvisAgent)a;
+		playerConversationId = genCID();
+		logger.fine("Generated conversation id: " + playerConversationId);
+		
 	}
 	
 	/* (non-Javadoc)
 	 * @see jade.core.behaviours.Behaviour#action()
 	 */
 	@Override
-	public void action() {
-		// Generate Player conversation Id
-		playerConversationId = genCID();
-		
+	public void onTick() {
 		// Based on agent state do something :)
 		switch (jAgent.agentState) {
 			case AGENT_INITIALIZING:
@@ -72,7 +75,6 @@ public class PlayerCommunicationBehavior extends CyclicBehaviour implements
 	}
 
 	//  --- generating distinct Random generator -------------------
-
 	private Random newRandom() 
 	{	return  new Random( hashCode() + System.currentTimeMillis()); }
 }

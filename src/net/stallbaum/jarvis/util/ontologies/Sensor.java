@@ -241,13 +241,13 @@ public class Sensor implements Concept {
 	 */
 	@Override
 	public String toString() {
-		return "Sensor [name=" + name + ", type=" + type + ", description="
-				+ description + ", fov=" + fov + ", fovScale=" + fovScale
-				+ ", refreshRate=" + refreshRate + ", refreshScale="
-				+ refreshScale + ", resolution=" + resolution
-				+ ", resolutionScale=" + resolutionScale + ", minRange="
-				+ minRange + ", maxRange=" + maxRange + ", rangeScale="
-				+ rangeScale + ", enabled=" + enabled + "]";
+		return "Name=" + name + ",\ntype=" + type + ",\ndescription="
+				+ description + ",\nfov=" + fov + ",\nfovScale=" + fovScale
+				+ ",\nrefreshRate=" + refreshRate + ",\nrefreshScale="
+				+ refreshScale + ",\nresolution=" + resolution
+				+ ",\nresolutionScale=" + resolutionScale + ",\nminRange="
+				+ minRange + ",\nmaxRange=" + maxRange + ",\nrangeScale="
+				+ rangeScale + ",\nenabled=" + enabled;
 	}
 
 

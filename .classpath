@@ -25,5 +25,9 @@
 	<classpathentry kind="lib" path="C:/Java/workspace/Jarvis/lib/XMLCodec.jar"/>
 	<classpathentry kind="lib" path="lib/jess.jar"/>
 	<classpathentry kind="lib" path="lib/jsr94.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-nio-4.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -26,6 +26,7 @@ import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
+import net.stallbaum.jarvis.util.ontologies.Tire;
 
 import jade.content.AgentAction;
 import jade.content.lang.Codec;
@@ -579,6 +580,11 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		return state;
 	}
 	
+	/**
+	 * 
+	 * @param robotId - id of the robot to look up
+	 * @return populated robot object, null on error
+	 */
 	private Robot generateRobot(Integer robotId) {
 		Robot robot = new Robot();
 		String query = "Select * from robots where UID = " + robotId;
@@ -595,7 +601,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			ResultSet rset = stmt.executeQuery(query);
 			
 			while(rset.next()){
-				// Get all the data out of the result set row
+				//----- Get all the data out of the result set row
 				name = rset.getString("name");
 				cfgFile = rset.getString("cfgFile");
 				sensorList = rset.getString("sensors");
@@ -603,20 +609,29 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				tireType = rset.getInt("tireType");
 				motorType = rset.getInt("motorType");
 				
-				// Fill in core robot info
+				//----- Fill in core robot info
 				robot.setName(name);
 				robot.setCfgFile(cfgFile);
 				robot.setTireCount(tireCount);
 				
-				// Check if sensor lists are empty, if not call sensor lookup
+				//---- Lookup Motor Information
+				Motor motor = lookupMotor(motorType);
+				robot.setMotorType(motor);
+				
+				//----- Look up Tire information
+				Tire tire = lookupTire(tireType);
+				robot.setTireType(tire);
+				
+				// ----- Check if sensor lists are empty, 
+				//       if not call sensor lookup
 				if (sensorList != null){
-					// Need to sort out where all the sensors are located ...
+					//----- Need to sort out where all the sensors are located
 					String front_center, front_left, front_right;
 					String left_front, left_middle, left_back;
 					String right_front, right_middle, right_back;
 					String back_center, back_left, back_right;
 					
-					//----------- Look for front facing sensors and add them
+					//----- Look for front facing sensors and add them
 					front_center = rset.getString("sensors-front-center");
 					if (front_center != null){
 						String[] sensorIds = front_center.split(",");
@@ -647,7 +662,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						}
 					}
 					
-					//------- Look for left facing sensors and add them
+					//----- Look for left facing sensors and add them
 					left_front = rset.getString("sensors-left-front");
 					if (left_front != null){
 						String[] sensorIds = left_front.split(",");
@@ -678,7 +693,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						}
 					}
 					
-					//-------  Look for right facing sensors and add them
+					//-----  Look for right facing sensors and add them
 					right_front = rset.getString("sensors-right-front");
 					if (right_front != null){
 						String[] sensorIds = right_front.split(",");
@@ -709,7 +724,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						}
 					}
 					
-					//------ Look for back facing sensors and add them
+					//----- Look for back facing sensors and add them
 					back_center = rset.getString("sensors-back-center");
 					if (back_center != null){
 						String[] sensorIds = back_center.split(",");
@@ -743,9 +758,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				else {
 					// No sensors defined
 				}
-				
-				Motor motor = lookupMotor(motorType);
-				robot.setMotorType(motor);
 			}
 			
 		} catch (SQLException e) {
@@ -834,5 +846,30 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			motor = null;
 		}
 		return motor;
+	}
+	
+	private Tire lookupTire(Integer _id) {
+		Tire tire = new Tire();
+		String name;
+		Float radius;
+		
+		String query = "SELECT * FROM robot_tires WHERE UID = " + _id;
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+			
+			while(rset.next()){
+				name = rset.getString("name");
+				radius = rset.getFloat("radius");
+				
+				tire.setName(name);
+				tire.setRadius(radius);
+			}
+		} catch (SQLException e) {
+			logger.severe("Unable to lookup motor id (" + _id + ").\n" + e.getLocalizedMessage());
+			tire = null;
+		}
+		return tire;
 	}
 }

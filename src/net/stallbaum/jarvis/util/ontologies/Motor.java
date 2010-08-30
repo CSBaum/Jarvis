@@ -84,8 +84,8 @@ public class Motor implements Concept {
 	 */
 	@Override
 	public String toString() {
-		return "Motor [name=" + name + ", gearRatio=" + gearRatio + ", rpm="
-				+ rpm + ", torque=" + torque + "]";
+		return "Name=" + name + ",\ngearRatio=" + gearRatio + ",\nrpm="
+				+ rpm + ",\ntorque=" + torque;
 	}
 
 }

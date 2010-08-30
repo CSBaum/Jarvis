@@ -283,18 +283,27 @@ public class Robot implements Concept, SecurityVocabulary {
 		hasRightSensors = true;
 		this.sensors.put(_sensor, RIGHT_BACK);
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getSensorCount() {
+		return sensors.size();
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Robot [name=" + name + ", hasAudio=" + hasAudio + ", hasSonar="
-				+ hasSonar + ", hasFrontSensors=" + hasFrontSensors
-				+ ", hasLeftSensors=" + hasLeftSensors + ", hasRightSensors="
-				+ hasRightSensors + ", hasBackSensors=" + hasBackSensors
-				+ ", tireCount=" + tireCount + ", tireType=" + tireType
-				+ ", motorType=" + motorType + ", cfgFile=" + cfgFile
-				+ ", sensors=" + sensors + "]";
+		return "name=" + name + ",\nhasAudio=" + hasAudio + ",\nhasSonar="
+				+ hasSonar + ",\nhasFrontSensors=" + hasFrontSensors
+				+ ",\nhasLeftSensors=" + hasLeftSensors + ",\nhasRightSensors="
+				+ hasRightSensors + ",\nhasBackSensors=" + hasBackSensors
+				+ ",\ntireCount=" + tireCount + ",\ntireType=" + tireType
+				+ ",\nmotorType=" + motorType + ",\ncfgFile=" + cfgFile
+				+ ",\nsensors=" + sensors.size();
 	}
 	
 	

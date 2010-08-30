@@ -111,7 +111,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 		if (jarvis.securityLevel != jarvis.lastSecurityLevel){
 			logger.config(getBehaviourName() + ": Detected security level difference. ");
 			
-			// -------> Send security level change message
+			// -----> Send security level change message
 			Ontology ontology = SecurityOntology.getInstance();
 			jarvis.getContentManager().registerOntology(ontology);
 			jarvis.getContentManager().registerLanguage(new XMLCodec());
@@ -136,7 +136,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			logger.config("Sent Security Level change to " + targetAID.getLocalName());
 		}
 		
-		// ---------------- Test & security level cleanup
+		//-----> Test & security level cleanup
 		if (tickCount % 10 == 0){
 			if (!agentInitialized){
 				Ontology ontology = SecurityOntology.getInstance();

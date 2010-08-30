@@ -54,7 +54,7 @@ public class Tire implements Concept {
 	 */
 	@Override
 	public String toString() {
-		return "Tire [name=" + name + ", radius=" + radius + "]";
+		return "Name=" + name + ", radius=" + radius;
 	}
 
 }

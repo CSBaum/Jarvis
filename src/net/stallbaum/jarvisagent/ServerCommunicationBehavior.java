@@ -12,6 +12,7 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
+import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.AgentInitialization;
 import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
@@ -31,6 +32,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 	
 	private JarvisAgent jAgent = null;
 	private String conversationId;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
 	public ServerCommunicationBehavior(Agent a, long period){
 		super(a, period);
@@ -62,11 +64,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		
 		msg = myAgent.receive(mt);
 
-		if (msg != null) {
-			
-			//-----> Debug
-			//System.out.println(myAgent.getLocalName() + ": AgentState = " + jAgent.agentState);
-			
+		if (msg != null) {	
 			//-----> Do basic msg / reply setup
 			reply = msg.createReply();
 			if (jAgent.sender == null) { 
@@ -123,8 +121,22 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								jAgent.agentType = ai.getAgentType();
 								
 								// Initialize Player / Robot Agent based on info
-								Robot robot = ai.getRobot();
-								System.out.println(myAgent.getLocalName() + ": Robot Information: " + robot.toString());
+								if (jAgent.agentType == ROBOT_AGENT){
+									jAgent.agentRobot = ai.getRobot();
+									System.out.println(myAgent.getLocalName() + ": Robot Information: " + jAgent.agentRobot.toString());
+									
+									// Launch PlayerAgent
+									
+									//--->Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
+									System.out.println("Adding HTTP client check");
+									jAgent.addBehaviour(new HttpCommunicationBehavior(jAgent));
+								}
+								else if (jAgent.agentType == NETWORK_AGENT){
+									// TODO implement network agent here
+								}
+								else {
+									// unimplemented remote agent initialization here ...
+								}
 								
 								// Change Agent state to Standby
 								jAgent.agentState = AGENT_STANDBY;
