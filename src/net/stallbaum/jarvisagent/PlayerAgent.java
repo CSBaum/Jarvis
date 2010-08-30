@@ -40,27 +40,6 @@ import org.xml.sax.SAXException;
 
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
-import net.stallbaum.jarvisagent.javaclient3.*;
-import net.stallbaum.jarvisagent.javaclient3.structures.PlayerConstants;
-import net.stallbaum.jarvisagent.javaclient3.structures.PlayerPose;
-import net.stallbaum.jarvisagent.javaclient3.structures.blobfinder.PlayerBlobfinderBlob;
-import net.stallbaum.jarvisagent.javaclient3.structures.blobfinder.PlayerBlobfinderData;
-import net.stallbaum.jarvisagent.javaclient3.structures.fiducial.PlayerFiducialData;
-import net.stallbaum.jarvisagent.javaclient3.structures.fiducial.PlayerFiducialGeom;
-import net.stallbaum.jarvisagent.javaclient3.structures.fiducial.PlayerFiducialItem;
-import net.stallbaum.jarvisagent.javaclient3.structures.gripper.PlayerGripperGeom;
-import net.stallbaum.jarvisagent.javaclient3.structures.laser.PlayerLaserConfig;
-import net.stallbaum.jarvisagent.javaclient3.structures.laser.PlayerLaserGeom;
-import net.stallbaum.jarvisagent.javaclient3.structures.localize.PlayerLocalizeSetPose;
-import net.stallbaum.jarvisagent.javaclient3.structures.planner.PlayerPlannerData;
-import net.stallbaum.jarvisagent.javaclient3.structures.position2d.PlayerPosition2dData;
-import net.stallbaum.jarvisagent.javaclient3.structures.position2d.PlayerPosition2dGeom;
-import net.stallbaum.jarvisagent.javaclient3.structures.ptz.PlayerPtzCmd;
-import net.stallbaum.jarvisagent.javaclient3.structures.ptz.PlayerPtzData;
-import net.stallbaum.jarvisagent.javaclient3.structures.rfid.PlayerRfidData;
-import net.stallbaum.jarvisagent.javaclient3.structures.rfid.PlayerRfidTag;
-import net.stallbaum.jarvisagent.javaclient3.structures.simulation.PlayerSimulationPose2dReq;
-import net.stallbaum.jarvisagent.javaclient3.structures.sonar.PlayerSonarGeom;
 import jade.core.Agent;
 import jade.util.Logger;
 

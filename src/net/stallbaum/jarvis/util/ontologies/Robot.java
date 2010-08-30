@@ -1,11 +1,21 @@
 package net.stallbaum.jarvis.util.ontologies;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.interfaces.PBEKey;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import jade.content.Concept;
 
@@ -40,6 +50,8 @@ public class Robot implements Concept, SecurityVocabulary {
 	private Tire tireType = null;
 	private Motor motorType = null;
 	
+	private String passphrase;
+	private byte[] key;
 	private String cfgFile;
 	
 	private Hashtable <Sensor, Integer> sensors;
@@ -282,6 +294,38 @@ public class Robot implements Concept, SecurityVocabulary {
 		hasBackSensors = true;
 		hasRightSensors = true;
 		this.sensors.put(_sensor, RIGHT_BACK);
+	}
+	
+	public void setPassphrase(String phrase){
+		this.passphrase = phrase;
+		
+		// Get the KeyGenerator
+		KeyGenerator kgen;
+		try {
+			kgen = KeyGenerator.getInstance("AES");
+			kgen.init(128); // 192 and 256 bits may not be available
+
+			// Generate the secret key specs.
+			SecretKey skey = kgen.generateKey();
+			byte[] raw = skey.getEncoded();
+			SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+		    SecureRandom rand = SecureRandom.getInstance("SHA1PRNG");  
+		    byte[] salt = new byte[16];  
+		    rand.nextBytes(salt);  
+		    PBEKeySpec password = new PBEKeySpec("passphrase".toCharArray(), salt, 1000, 128);  
+		    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");  
+		    PBEKey key = (PBEKey) factory.generateSecret(password);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public byte[] getKey() {
+		return this.key;
 	}
 	
 	/**

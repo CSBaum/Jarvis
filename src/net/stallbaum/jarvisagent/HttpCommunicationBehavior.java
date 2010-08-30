@@ -8,7 +8,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -105,6 +113,33 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 		boolean retCode = false;
 		boolean isValid = false;
 		
+		// -----> Build encrypted URL :)
+		SecretKey encKey = new SecretKeySpec(jAgent.agentRobot.getKey(), "AES");
+
+		// Instantiate the cipher
+		Cipher cipher;
+		try {
+			cipher = Cipher.getInstance("AES");		
+			cipher.init(Cipher.ENCRYPT_MODE, encKey);
+
+			byte[] encrypted = cipher.doFinal("This is just an example times two".getBytes());
+			System.out.println("encrypted string: " + asHex(encrypted));
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NoSuchPaddingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Connect to robot's webserver using authentication URL information
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpGet get = new HttpGet(url + ":" + port + "/Authenticate?user=jarvis");
@@ -307,4 +342,23 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 		return builder.parse(new InputSource(new StringReader(xmlSource)));
 	}
 
+	/**
+     * Turns array of bytes into string
+     *
+     * @param buf	Array of bytes to convert to hex string
+     * @return	Generated hex string
+     */
+     public static String asHex (byte buf[]) {
+      StringBuffer strbuf = new StringBuffer(buf.length * 2);
+      int i;
+
+      for (i = 0; i < buf.length; i++) {
+       if (((int) buf[i] & 0xff) < 0x10)
+	    strbuf.append("0");
+
+       strbuf.append(Long.toString((int) buf[i] & 0xff, 16));
+      }
+
+      return strbuf.toString();
+     }
 }
