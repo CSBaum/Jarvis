@@ -296,34 +296,9 @@ public class Robot implements Concept, SecurityVocabulary {
 		this.sensors.put(_sensor, RIGHT_BACK);
 	}
 	
-	public void setPassphrase(String phrase){
-		this.passphrase = phrase;
-		
-		// Get the KeyGenerator
-		KeyGenerator kgen;
-		try {
-			kgen = KeyGenerator.getInstance("AES");
-			kgen.init(128); // 192 and 256 bits may not be available
-
-			// Generate the secret key specs.
-			SecretKey skey = kgen.generateKey();
-			byte[] raw = skey.getEncoded();
-			SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-		    SecureRandom rand = SecureRandom.getInstance("SHA1PRNG");  
-		    byte[] salt = new byte[16];  
-		    rand.nextBytes(salt);  
-		    PBEKeySpec password = new PBEKeySpec("passphrase".toCharArray(), salt, 1000, 128);  
-		    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");  
-		    PBEKey key = (PBEKey) factory.generateSecret(password);
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void setKey(byte[] _key) {
+		this.key = _key;
 	}
-	
 	public byte[] getKey() {
 		return this.key;
 	}

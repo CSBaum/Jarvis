@@ -81,32 +81,31 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 	 */
 	@Override
 	public void action() {
-		
-		
-		HttpClient httpclient = new DefaultHttpClient();
-				
-		// Testing code (remove once things are connected...
-		url = "http://192.168.20.101";
-		port = 8080;
-		isInitialized = true;
-		
-		
-		if (parseSensorList() != 0) {
-			System.out.println("Unable to parse sensor list.");
+		if (jAgent.agentState != AGENT_HALTING) {
+			HttpClient httpclient = new DefaultHttpClient();
+					
+			// Testing code (remove once things are connected...
+			url = "http://192.168.20.100";
+			port = 8080;
+			isInitialized = true;
+			
+			
+			if (parseSensorList() != 0) {
+				System.out.println("Unable to parse sensor list.");
+			}
+			
+			if (!authenticate()){
+				System.out.println("Unable to authenticate with robot.");
+				jAgent.agentState = AGENT_HALTING;
+			}
+			
+			System.out.println("----------------------------------------");
+	
+	        // When HttpClient instance is no longer needed, 
+	        // shut down the connection manager to ensure
+	        // immediate deallocation of all system resources
+	        httpclient.getConnectionManager().shutdown();      
 		}
-		
-		if (!authenticate()){
-			System.out.println("Unable to authenticate with robot.");
-			jAgent.agentState = AGENT_HALTING;
-		}
-		
-		System.out.println("----------------------------------------");
-
-        // When HttpClient instance is no longer needed, 
-        // shut down the connection manager to ensure
-        // immediate deallocation of all system resources
-        httpclient.getConnectionManager().shutdown();      
-		
 	}
 	
 	private boolean authenticate() {
@@ -140,6 +139,7 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		// Connect to robot's webserver using authentication URL information
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpGet get = new HttpGet(url + ":" + port + "/Authenticate?user=jarvis");

@@ -595,6 +595,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		Integer tireType;
 		Integer tireCount;
 		Integer motorType;
+		byte[] key;
 		
 		try {
 			Statement stmt = conn.createStatement();
@@ -608,11 +609,13 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				tireCount = rset.getInt("tireCount");
 				tireType = rset.getInt("tireType");
 				motorType = rset.getInt("motorType");
+				key = rset.getBytes("commKey");
 				
 				//----- Fill in core robot info
 				robot.setName(name);
 				robot.setCfgFile(cfgFile);
 				robot.setTireCount(tireCount);
+				robot.setKey(key);
 				
 				//---- Lookup Motor Information
 				Motor motor = lookupMotor(motorType);
@@ -766,7 +769,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						  e.getLocalizedMessage());
 		}
 		
-		logger.info("Constructed this robot object --> " + robot);
+		logger.finer("Constructed this robot object --> " + robot);
 		
 		return robot;
 	}
