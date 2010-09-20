@@ -22,6 +22,8 @@ public class AgentInitialization implements Concept, SecurityVocabulary {
 	
 	private ResultSet rs = null;
 	
+	private String alertId = ""; 
+	
 	/**
 	 * Default Constructor -- values are added via calling Class
 	 */
@@ -92,5 +94,20 @@ public class AgentInitialization implements Concept, SecurityVocabulary {
 	public void setLoc(Location loc) {
 		this.loc = loc;
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getAlertId(){
+		return alertId;
+	}
 
+	/**
+	 * 
+	 * @param alert
+	 */
+	public void setAlertId(String alert) {
+		this.alertId = alert;
+	}
 }

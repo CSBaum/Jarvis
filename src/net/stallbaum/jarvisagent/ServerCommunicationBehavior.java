@@ -31,7 +31,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 	private static final long serialVersionUID = 5440333635234994943L;
 	
 	private JarvisAgent jAgent = null;
-	private String conversationId;
+	private String conversationId; 
+	private String alertId;
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
 	public ServerCommunicationBehavior(Agent a, long period){

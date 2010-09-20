@@ -40,6 +40,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 	private int tickCount = 0;
 	private boolean agentInitialized = false;
 	private boolean agentNotified = false;
+	private String alertId = "";
 	
 	private Robot robot;
 	
@@ -47,12 +48,13 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 	
 	private boolean finished = false;
 	
-	public JarvisAgentCommunication(Agent a, long period, AID _AID, Robot _robot) {
+	public JarvisAgentCommunication(Agent a, long period, AID _AID, Robot _robot, String _alert) {
 		super(a, period);
 		jarvis = (Jarvis)a;
 		targetAID = _AID;
 		convId = genCID();
 		robot = _robot;
+		alertId = _alert;
 	}
 
 	@Override
@@ -155,6 +157,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				ai.setAgentType(ROBOT_AGENT);
 				ai.setRobot(robot);
 				ai.setLoc(loc);
+				ai.setAlertId(alertId);
 	
 				try {
 					msg.setContentObject(ai);

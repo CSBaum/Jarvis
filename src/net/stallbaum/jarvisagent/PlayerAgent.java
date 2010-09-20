@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.util.Logger;
 
@@ -47,7 +48,7 @@ import jade.util.Logger;
  * @author Sean
  *
  */
-public class PlayerAgent extends Agent implements SecurityVocabulary {
+public class PlayerAgent extends AbsJAgent {
 
 	/**
 	 * 
@@ -291,5 +292,41 @@ public class PlayerAgent extends Agent implements SecurityVocabulary {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		return builder.parse(new InputSource(new StringReader(xmlSource)));
+	}
+
+	@Override
+	public int getState() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getConversationId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAlertId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AID getReceiver() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AID getSender() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setSender(AID _sender) {
+		// TODO Auto-generated method stub
+		
 	}
 }

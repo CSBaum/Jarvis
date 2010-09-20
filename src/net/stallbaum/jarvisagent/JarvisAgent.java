@@ -29,7 +29,7 @@ import jade.wrapper.ControllerException;
  * @author Sean
  *
  */
-public class JarvisAgent extends Agent implements SecurityVocabulary {
+public class JarvisAgent extends AbsJAgent {
 
 	/**
 	 * Unique id suggested by Eclipse :)
@@ -44,6 +44,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 
 	//-----> COmmunication variables
 	protected String conversationId = "";
+	protected String alertId = "";
 	protected AID sender = null;
 
 	//------> Agent Status
@@ -96,6 +97,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		// TODO Implement rest of agent start up code
 
 		//----> Add JarvisCommBehahvior
+		
 		ServerCommunicationBehavior sbc = new ServerCommunicationBehavior(this, 500);
 		addBehaviour(sbc);
 		
@@ -231,5 +233,36 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		}
 		
 		return state;
+	}
+
+
+	@Override
+	public AID getSender() {
+		return sender;
+	}
+
+	@Override
+	public String getAlertId() {
+		return alertId;
+	}
+
+	@Override
+	public int getState() {
+		return agentState;
+	}
+
+	@Override
+	public String getConversationId() {
+		return conversationId;
+	}
+
+	@Override
+	public AID getReceiver() {
+		return getAID();
+	}
+
+	@Override
+	public void setSender(AID _sender) {
+		this.sender = _sender;
 	}
 }
