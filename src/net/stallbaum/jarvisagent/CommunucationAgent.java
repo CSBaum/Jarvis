@@ -84,24 +84,14 @@ public class CommunucationAgent extends AbsJAgent {
 	}
 
 	protected void setup(){
-		logger.info("Starting JarvisAgent: " + getAID().getName());
+		logger.info("Starting JarvisCommAgent: " + getAID().getName());
 
 		// Register with the Container's Yellowbook service
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
-		/*switch(agentType){
-			case ROBOT_AGENT: sd.setType("jarvis-agent-robot");
-							  break;
-			case NETWORK_AGENT: sd.setType("jarvis-agent-network");
-								break;
-			case REMOTE_AGENT: sd.setType("jarvis-agent-remote");
-							   break;
-			default: logger.severe("Invalid AgentType detected --> " 
-								   + agentType + ".  Setting agent status to shutdown.");
-					 agentState = AGENT_HALTING;
-		}*/
-		sd.setType("jarvis-agent-robot");
+		
+		sd.setType("jarvis-agent-comm");
 		sd.setName("jarvis-system");
 		dfd.addServices(sd);
 		try {

@@ -4,6 +4,8 @@
 package net.stallbaum.jarvisagent;
 
 import java.io.IOException;
+
+import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
@@ -50,6 +52,8 @@ public class JarvisAgent extends AbsJAgent {
 	//------> Agent Status
 	protected int agentState = AGENT_INITIALIZING;
 	protected int previousAgentState = AGENT_INITIALIZING;
+	protected boolean alertStatus = false;
+	private AlertConfirmation aConfirmation;
 	
 	//-----> Agent configuration information
 	protected int agentType;
@@ -264,5 +268,25 @@ public class JarvisAgent extends AbsJAgent {
 	@Override
 	public void setSender(AID _sender) {
 		this.sender = _sender;
+	}
+
+	@Override
+	public void setAlertStataus(boolean _flag) {
+		this.alertStatus = _flag;
+	}
+
+	@Override
+	public boolean getAlertStatus() {
+		return this.alertStatus;
+	}
+
+	@Override
+	public void setAlertConfirmation(AlertConfirmation _confirm) {
+		this.aConfirmation = _confirm;
+	}
+
+	@Override
+	public AlertConfirmation getAlertCOnfirmation() {
+		return this.aConfirmation;
 	}
 }
