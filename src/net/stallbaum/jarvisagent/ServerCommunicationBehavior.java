@@ -287,6 +287,14 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				myAgent.send(reply);
 			}
 		}
+		else if (jAgent.alertFound) {
+			// we need to send out alert message
+			ACLMessage alertMsg = new ACLMessage(ACLMessage.PROPAGATE);
+			alertMsg.setSender(jAgent.getAID());
+			alertMsg.setConversationId(jAgent.getAlertId());
+			//alertMsg.setContentObject(jAgent.al)
+			
+		}
 		else if(jAgent.getAlertStatus()){
 			// Pull the confirmation message from the agent and send a new message to Jarvis
 			ACLMessage alertMsg = new ACLMessage(ACLMessage.CONFIRM);

@@ -52,6 +52,7 @@ public class JarvisAgent extends AbsJAgent {
 	//------> Agent Status
 	protected int agentState = AGENT_INITIALIZING;
 	protected int previousAgentState = AGENT_INITIALIZING;
+	protected boolean alertFound = false;
 	protected boolean alertStatus = false;
 	private AlertConfirmation aConfirmation;
 	

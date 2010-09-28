@@ -3,6 +3,7 @@
  */
 package net.stallbaum.jarvisagent;
 
+import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import jade.core.AID;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -114,6 +115,30 @@ public class CommunucationAgent extends AbsJAgent {
 	public void setSender(AID _sender) {
 		// TODO Auto-generated method stub
 		this.sender = _sender;
+	}
+
+	@Override
+	public void setAlertStataus(boolean _flag) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getAlertStatus() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setAlertConfirmation(AlertConfirmation _confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AlertConfirmation getAlertCOnfirmation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

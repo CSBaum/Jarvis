@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
 import jade.core.AID;
@@ -328,5 +329,29 @@ public class PlayerAgent extends AbsJAgent {
 	public void setSender(AID _sender) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void setAlertStataus(boolean _flag) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getAlertStatus() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setAlertConfirmation(AlertConfirmation _confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AlertConfirmation getAlertCOnfirmation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
