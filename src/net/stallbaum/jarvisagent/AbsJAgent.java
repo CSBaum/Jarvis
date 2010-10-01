@@ -25,5 +25,5 @@ public abstract class AbsJAgent extends Agent implements SecurityVocabulary {
 	public abstract void setAlertStataus(boolean _flag);
 	public abstract boolean getAlertStatus();
 	public abstract void setAlertConfirmation(AlertConfirmation _confirm);
-	public abstract AlertConfirmation getAlertCOnfirmation();
+	public abstract AlertConfirmation getAlertConfirmation();
 }

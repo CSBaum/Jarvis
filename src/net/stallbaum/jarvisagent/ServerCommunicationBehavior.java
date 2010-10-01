@@ -292,6 +292,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			ACLMessage alertMsg = new ACLMessage(ACLMessage.PROPAGATE);
 			alertMsg.setSender(jAgent.getAID());
 			alertMsg.setConversationId(jAgent.getAlertId());
+			alertMsg.addReceiver(jAgent.getSender());
 			//alertMsg.setContentObject(jAgent.al)
 			
 		}
@@ -302,7 +303,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			alertMsg.addReceiver(jAgent.getSender());
 			alertMsg.setConversationId(jAgent.getConversationId());
 			try {
-				alertMsg.setContentObject(jAgent.getAlertCOnfirmation());
+				alertMsg.setContentObject(jAgent.getAlertConfirmation());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

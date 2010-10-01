@@ -287,7 +287,7 @@ public class JarvisAgent extends AbsJAgent {
 	}
 
 	@Override
-	public AlertConfirmation getAlertCOnfirmation() {
+	public AlertConfirmation getAlertConfirmation() {
 		return this.aConfirmation;
 	}
 }

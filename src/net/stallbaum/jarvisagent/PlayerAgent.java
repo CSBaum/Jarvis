@@ -350,7 +350,7 @@ public class PlayerAgent extends AbsJAgent {
 	}
 
 	@Override
-	public AlertConfirmation getAlertCOnfirmation() {
+	public AlertConfirmation getAlertConfirmation() {
 		// TODO Auto-generated method stub
 		return null;
 	}
