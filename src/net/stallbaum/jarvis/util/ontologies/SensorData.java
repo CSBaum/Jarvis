@@ -53,6 +53,12 @@ public abstract class SensorData implements Concept, SecurityVocabulary {
 		return this.timeStamp;
 	}
 	
+	@Override
+	public String toString() {
+		return "SensorData [timeStamp=" + timeStamp + ", isArchived="
+				+ isArchived + ", type=" + type + ", agent=" + agent + "]";
+	}
+
 	//---------> Abstract Methods
 	public abstract String getDataSince(Date _start);
 	public abstract String getDataBetween(Date _start, Date _end);

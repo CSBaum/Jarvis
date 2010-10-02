@@ -21,6 +21,7 @@ import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.SensorData;
 import net.stallbaum.jarvis.util.ontologies.SystemMessage;
 
 /**
@@ -188,7 +189,8 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 									   + "\n\t: Error Code: " + problem.getNum()
 									   + "\n\t: Error Message: " + problem.getMsg());
 				} catch (UnreadableException ure) {
-					System.out.println(myAgent.getLocalName() + ": Unable to process content.\n\t" + ure.getLocalizedMessage());
+					logger.warning("Unable to process content.\n\t" + ure.getLocalizedMessage());
+					//System.out.println(myAgent.getLocalName() + ": Unable to process content.\n\t" + ure.getLocalizedMessage());
 					ure.printStackTrace();
 				}
 			}
@@ -207,6 +209,21 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			}
 			else if(performative == ACLMessage.INFORM){
 				// ------> Agent is sending data back
+				logger.fine("Agent has recieved an INFORM msg");
+				try {
+					if (msg.getContentObject() instanceof SensorData){
+						SensorData data = (SensorData)msg.getContentObject();
+						logger.fine("Recieved the following sensor data: " + data);
+						//----> Send data to Jess Agent
+						
+						//----> Check if archived fleg is set
+						if(data.getIsArchived()){
+							// write the data out to a  flat file
+						}
+					}
+				} catch (UnreadableException e) {
+					logger.warning("Unable to read message content" + e.getLocalizedMessage());
+				}
 			}
 		}
 		else {
