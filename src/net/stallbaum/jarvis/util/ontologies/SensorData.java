@@ -14,7 +14,9 @@ import jade.core.AID;
  */
 public abstract class SensorData implements Concept, SecurityVocabulary {
 
+	Date timeStamp;
 	boolean isArchived;
+	int type;
 	AID agent;
 	
 	/**
@@ -24,8 +26,11 @@ public abstract class SensorData implements Concept, SecurityVocabulary {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public SensorData(AID _agent){
+	public SensorData(AID _agent, int _type){
 		this.agent = _agent;
+		this.type = _type;
+		this.isArchived = false;
+		//this.timeStamp = 
 	}
 	
 	public boolean getIsArchived(){
@@ -40,6 +45,13 @@ public abstract class SensorData implements Concept, SecurityVocabulary {
 		return this.agent;
 	}
 	
+	public int getType(){
+		return this.type;
+	}
+	
+	public Date getTimeStamp() {
+		return this.timeStamp;
+	}
 	
 	//---------> Abstract Methods
 	public abstract String getDataSince(Date _start);
