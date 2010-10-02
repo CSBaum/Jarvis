@@ -19,6 +19,7 @@ import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityLevel;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.SensorData;
 import net.stallbaum.jarvis.util.ontologies.SystemMessage;
 
 /**
@@ -33,6 +34,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 	private JarvisAgent jAgent = null;
 	private String conversationId; 
 	private String alertId;
+	
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 	
 	public ServerCommunicationBehavior(Agent a, long period){
@@ -48,6 +50,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		ACLMessage reply = null;
 		Object contentObj = null;
 		int performative = 0;
+		
 
 		MessageTemplate mt = null;
 		
@@ -95,7 +98,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			}
 			
 			//-----> Process message based on agent state
-			switch(jAgent.agentState){
+			switch(jAgent.getState()){
 				case AGENT_INITIALIZING:
 					// Should we check to see if it is the correct Performative? (Inform)
 					if (performative != ACLMessage.INFORM && performative != ACLMessage.REQUEST) {
@@ -287,7 +290,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				myAgent.send(reply);
 			}
 		}
-		else if (jAgent.alertFound) {
+		else {
+			block();
+		}
+		
+		//-----> Check for alert status ...
+		//TODO       THIS SHOULD GO AWAY ....
+		if (jAgent.alertFound) {
 			// we need to send out alert message
 			ACLMessage alertMsg = new ACLMessage(ACLMessage.PROPAGATE);
 			alertMsg.setSender(jAgent.getAID());
@@ -311,8 +320,43 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			
 			myAgent.send(alertMsg);
 		}
-		else {
-			block();
+		
+		//------> Sensor data check and send if right agent state
+		if ((jAgent.getState() == AGENT_ACTIVE) && 
+				(jAgent.newSensordata.size() > 0)){
+			int inx = 0;
+			
+			logger.fine("Processing " + jAgent.newSensordata.size() + 
+						" new data inputs");
+			// Generate a new msg for each data obj and then remove 
+			//       from the map and place on perm.
+			ACLMessage dataMsg = null;
+			
+			for(SensorData data:jAgent.newSensordata){
+				// Initialize Msg
+				dataMsg = new ACLMessage(ACLMessage.INFORM);
+				dataMsg.addReceiver(jAgent.getSender());
+				dataMsg.setSender(jAgent.getAID());
+				dataMsg.setConversationId(jAgent.getConversationId());
+		
+				// Append data to msg
+				try {
+					dataMsg.setContentObject(data);
+				} catch (IOException e) {
+					logger.severe("Unable to attach sensor data to message:\n\tType: " + 
+								   data.getType() + "\n\tTimeStamp:" );
+				}
+				
+				// Sned msg
+				jAgent.send(dataMsg);
+				
+				// Move data to perm list
+				jAgent.sensordata.add(data);
+				
+				// Remove the item form teh new list
+				jAgent.newSensordata.remove(inx);
+				inx++;
+			}
 		}
 	}
 }

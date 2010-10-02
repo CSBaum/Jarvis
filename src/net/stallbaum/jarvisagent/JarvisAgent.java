@@ -4,12 +4,16 @@
 package net.stallbaum.jarvisagent;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Vector;
 
 import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.SensorData;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -61,6 +65,9 @@ public class JarvisAgent extends AbsJAgent {
 	protected Robot agentRobot;
 	protected int agentSensorCount = 0;
 
+	protected ArrayList<SensorData> sensordata;
+	protected ArrayList<SensorData> newSensordata;
+	
 	/**
 	 * 
 	 */
