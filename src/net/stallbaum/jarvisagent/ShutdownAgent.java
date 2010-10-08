@@ -26,17 +26,17 @@ public class ShutdownAgent extends TickerBehaviour implements
 		SecurityVocabulary {
 	
 	Behaviour behaviour = null;
-	JarvisAgent jAgent = null;
+	AbsJAgent jAgent = null;
 	
 	public ShutdownAgent(Agent a, long period, Behaviour _behaviour){
 		super(a, period);
 		behaviour = _behaviour;
-		jAgent = (JarvisAgent)a;
+		jAgent = (AbsJAgent)a;
 	}
 	
 	@Override
 	public void onTick() {
-		if (jAgent.agentState == AGENT_HALTING) {
+		if (jAgent.getState() == AGENT_HALTING) {
 			
 			// send a reply
 			// -------> Send security level change message
@@ -46,9 +46,9 @@ public class ShutdownAgent extends TickerBehaviour implements
 			
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.setSender(jAgent.getAID());
-			msg.addReceiver(jAgent.sender);
+			msg.addReceiver(jAgent.getSender());
 			msg.setLanguage(XMLCodec.NAME);
-			msg.setConversationId(jAgent.conversationId);
+			msg.setConversationId(jAgent.getConversationId());
 			msg.setPerformative(ACLMessage.AGREE);
 			msg.setContent("Shutdown accepted");
 			myAgent.send(msg);

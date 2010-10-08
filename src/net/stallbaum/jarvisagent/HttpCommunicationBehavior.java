@@ -56,6 +56,7 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
+import net.stallbaum.jarvis.util.ontologies.TemperatureData;
 
 /**
  * @author sean
@@ -98,6 +99,13 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 				System.out.println("Unable to authenticate with robot.");
 				jAgent.agentState = AGENT_HALTING;
 			}
+			
+			System.out.println("------- Fake Stuff happening here -------");
+			TemperatureData tempData = new TemperatureData(jAgent.getAID(),1);
+			tempData.setTemp(Float.parseFloat("72.4"));
+			jAgent.newSensordata.add(tempData);
+			
+			System.out.println("Generated the followiong sensor data: " + tempData);
 			
 			System.out.println("----------------------------------------");
 	
@@ -309,6 +317,7 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 			}
 		}
 	}
+	
 	/**
 	 * 
 	 * @param is

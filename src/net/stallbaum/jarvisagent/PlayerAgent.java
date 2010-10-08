@@ -38,8 +38,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.util.Logger;
 
@@ -47,7 +49,7 @@ import jade.util.Logger;
  * @author Sean
  *
  */
-public class PlayerAgent extends Agent implements SecurityVocabulary {
+public class PlayerAgent extends AbsJAgent {
 
 	/**
 	 * 
@@ -291,5 +293,65 @@ public class PlayerAgent extends Agent implements SecurityVocabulary {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		return builder.parse(new InputSource(new StringReader(xmlSource)));
+	}
+
+	@Override
+	public int getState() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getConversationId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAlertId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AID getReceiver() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AID getSender() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setSender(AID _sender) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setAlertStataus(boolean _flag) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getAlertStatus() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setAlertConfirmation(AlertConfirmation _confirm) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AlertConfirmation getAlertConfirmation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

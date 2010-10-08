@@ -4,10 +4,16 @@
 package net.stallbaum.jarvisagent;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Vector;
+
+import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.SensorData;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -29,7 +35,7 @@ import jade.wrapper.ControllerException;
  * @author Sean
  *
  */
-public class JarvisAgent extends Agent implements SecurityVocabulary {
+public class JarvisAgent extends AbsJAgent {
 
 	/**
 	 * Unique id suggested by Eclipse :)
@@ -44,17 +50,24 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 
 	//-----> COmmunication variables
 	protected String conversationId = "";
+	protected String alertId = "";
 	protected AID sender = null;
 
 	//------> Agent Status
 	protected int agentState = AGENT_INITIALIZING;
 	protected int previousAgentState = AGENT_INITIALIZING;
+	protected boolean alertFound = false;
+	protected boolean alertStatus = false;
+	private AlertConfirmation aConfirmation;
 	
 	//-----> Agent configuration information
 	protected int agentType;
 	protected Robot agentRobot;
 	protected int agentSensorCount = 0;
 
+	protected ArrayList<SensorData> sensordata;
+	protected ArrayList<SensorData> newSensordata;
+	
 	/**
 	 * 
 	 */
@@ -96,6 +109,7 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		// TODO Implement rest of agent start up code
 
 		//----> Add JarvisCommBehahvior
+		
 		ServerCommunicationBehavior sbc = new ServerCommunicationBehavior(this, 500);
 		addBehaviour(sbc);
 		
@@ -231,5 +245,56 @@ public class JarvisAgent extends Agent implements SecurityVocabulary {
 		}
 		
 		return state;
+	}
+
+
+	@Override
+	public AID getSender() {
+		return sender;
+	}
+
+	@Override
+	public String getAlertId() {
+		return alertId;
+	}
+
+	@Override
+	public int getState() {
+		return agentState;
+	}
+
+	@Override
+	public String getConversationId() {
+		return conversationId;
+	}
+
+	@Override
+	public AID getReceiver() {
+		return getAID();
+	}
+
+	@Override
+	public void setSender(AID _sender) {
+		this.sender = _sender;
+	}
+
+	@Override
+	public void setAlertStataus(boolean _flag) {
+		this.alertStatus = _flag;
+	}
+
+	@Override
+	public boolean getAlertStatus() {
+		return this.alertStatus;
+	}
+
+	@Override
+	public void setAlertConfirmation(AlertConfirmation _confirm) {
+		this.aConfirmation = _confirm;
+	}
+
+	@Override
+	public AlertConfirmation getAlertConfirmation() {
+		return this.aConfirmation;
 	}
 }

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
@@ -81,6 +82,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	protected Set<AID> activeAgentsSet = Collections.synchronizedSet(activeAgentsHSet);
 	protected Set<AID> agentListingSet = Collections.synchronizedSet(agentListingHSet);
 	
+	protected String alertId = "";
+	
 	// --------------- GUI Variables
 	static final int WAIT = -1;
 	static final int SHUTDOWN = 1;
@@ -140,6 +143,9 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		Vector<String> ignoreList = new Vector<String>();
 		checkForActiveAgents(numberOfRows, ignoreList);
 		
+		// Generate AlertID
+		alertId = genCID();
+		
 		// Add Agent Behaviors
 		try
 		{
@@ -157,7 +163,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 				logger.fine("Processing: " + JAgent.getLocalName());
 				Robot r = jarvisAgents2.get(JAgent);
 				agentListing.add(JAgent);
-				addBehaviour(new JarvisAgentCommunication(this, 4000 , JAgent, r));
+				addBehaviour(new JarvisAgentCommunication(this, 4000 , JAgent, r, alertId));
 			}
 			
 			//------> Added shutdown behaviour
@@ -875,4 +881,24 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		}
 		return tire;
 	}
+	
+//  --- generating Conversation IDs -------------------
+
+	protected int cidCnt = 0;
+	String cidBase ;
+
+	private String genCID() 
+	{ 
+		if (cidBase==null) {
+			cidBase = getLocalName() + hashCode() +
+			System.currentTimeMillis()%10000 + "_";
+		}
+		return  cidBase + (cidCnt++); 
+	}
+
+	//  --- generating distinct Random generator -------------------
+
+	private Random newRandom() 
+	{	return  new Random( hashCode() + System.currentTimeMillis()); }
+	
 }
