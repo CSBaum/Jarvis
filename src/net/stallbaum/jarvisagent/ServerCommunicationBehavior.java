@@ -4,6 +4,7 @@
 package net.stallbaum.jarvisagent;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -132,8 +133,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 									// Launch PlayerAgent
 									
 									//--->Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
-									System.out.println("Adding HTTP client check");
-									jAgent.addBehaviour(new HttpCommunicationBehavior(jAgent));
+									//System.out.println("Adding HTTP client check");
+									//jAgent.addBehaviour(new HttpCommunicationBehavior(jAgent));
 								}
 								else if (jAgent.agentType == NETWORK_AGENT){
 									// TODO implement network agent here
@@ -332,7 +333,9 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			//       from the map and place on perm.
 			ACLMessage dataMsg = null;
 			
-			for(SensorData data:jAgent.newSensordata){
+			//for(SensorData data:jAgent.newSensordata){
+			for(int jnx=0; jnx < jAgent.newSensordata.size(); jnx++) {
+				SensorData data = jAgent.newSensordata.get(jnx);
 				// Initialize Msg
 				dataMsg = new ACLMessage(ACLMessage.INFORM);
 				dataMsg.addReceiver(jAgent.getSender());
@@ -351,12 +354,18 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				jAgent.send(dataMsg);
 				
 				// Move data to perm list
+				if (jAgent.sensordata == null){
+					jAgent.sensordata = new ArrayList<SensorData>();
+				}
 				jAgent.sensordata.add(data);
 				
 				// Remove the item form teh new list
 				jAgent.newSensordata.remove(inx);
 				inx++;
 			}
+		}
+		else {
+			logger.info("No new data or wrong state." + jAgent.getAgentState());
 		}
 	}
 }

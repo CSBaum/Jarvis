@@ -19,6 +19,9 @@ public abstract class SensorData implements Concept, SecurityVocabulary {
 	int type;
 	AID agent;
 	
+	public static final int TEMPERATURE_SENSOR = 1;
+	public static final int ULTRASONIC_SENSOR = 2;
+	
 	/**
 	 * 
 	 */
@@ -30,7 +33,7 @@ public abstract class SensorData implements Concept, SecurityVocabulary {
 		this.agent = _agent;
 		this.type = _type;
 		this.isArchived = false;
-		//this.timeStamp = 
+		this.timeStamp = new Date(); 
 	}
 	
 	public boolean getIsArchived(){

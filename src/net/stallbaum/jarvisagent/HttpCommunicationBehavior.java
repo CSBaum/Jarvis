@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -53,16 +54,18 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
+import net.stallbaum.jarvis.util.ontologies.SensorData;
 import net.stallbaum.jarvis.util.ontologies.TemperatureData;
 
 /**
  * @author sean
  *
  */
-public class HttpCommunicationBehavior extends OneShotBehaviour implements
+public class HttpCommunicationBehavior extends WakerBehaviour implements
 		SecurityVocabulary {
 	
 	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
@@ -72,8 +75,8 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 	int port;
 	boolean isInitialized;
 	
-	public HttpCommunicationBehavior(JarvisAgent agent){
-		super();
+	public HttpCommunicationBehavior(JarvisAgent agent, long sleepTime){
+		super(agent, sleepTime);
 		jAgent = agent;
 	}
 	
@@ -81,12 +84,12 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 	 * @see jade.core.behaviours.Behaviour#action()
 	 */
 	@Override
-	public void action() {
+	public void onWake() {
 		if (jAgent.agentState != AGENT_HALTING) {
 			HttpClient httpclient = new DefaultHttpClient();
 					
 			// Testing code (remove once things are connected...
-			url = "http://192.168.20.100";
+			url = "http://192.168.20.104";
 			port = 8080;
 			isInitialized = true;
 			
@@ -95,19 +98,19 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 				System.out.println("Unable to parse sensor list.");
 			}
 			
-			if (!authenticate()){
+			/*if (!authenticate()){
 				System.out.println("Unable to authenticate with robot.");
 				jAgent.agentState = AGENT_HALTING;
+			}*/
+			
+			System.out.println("==================== Data Pull ========================");
+			if (!parseData()){
+				System.out.println("Unable to parse data from robot.");
+				jAgent.agentState = AGENT_HALTING;				
 			}
 			
-			System.out.println("------- Fake Stuff happening here -------");
-			TemperatureData tempData = new TemperatureData(jAgent.getAID(),1);
-			tempData.setTemp(Float.parseFloat("72.4"));
-			jAgent.newSensordata.add(tempData);
-			
-			System.out.println("Generated the followiong sensor data: " + tempData);
-			
-			System.out.println("----------------------------------------");
+			System.out.println("==================== Data Pull Done ========================");
+			System.out.println("JarvisAgent know of " + jAgent.newSensordata.size() + " new sensor data readings...");
 	
 	        // When HttpClient instance is no longer needed, 
 	        // shut down the connection manager to ensure
@@ -249,19 +252,20 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 					nList = xmlContent.getElementsByTagName("Sensor");
 					System.out.println("Found the element 'Sensor' --> " + nList.getLength() + " times.");
 					
-					Integer robotCount = jAgent.agentRobot.getSensorCount();
-					System.out.println("Robot has " + robotCount + " sensors.");
-					if (nList.getLength() == robotCount){
-						logger.fine("The sensor counts line up!");
+					if (jAgent.agentRobot != null){
+						Integer robotCount = jAgent.agentRobot.getSensorCount();
+						System.out.println("Robot has " + robotCount + " sensors.");
+						if (nList.getLength() == robotCount){
+							logger.fine("The sensor counts line up!");
+						}
+						else {
+							System.out.println("Agent sent a different number of sensors " 
+									  + "than what Jarvis expects.  Robot -> " 
+									  + nList.getLength() + " | Jarvis -> " 
+									  + jAgent.agentRobot.getSensorCount());
+						}
 					}
-					else {
-						System.out.println("Agent sent a different number of sensors " 
-								  + "than what Jarvis expects.  Robot -> " 
-								  + nList.getLength() + " | Jarvis -> " 
-								  + jAgent.agentRobot.getSensorCount());
-					}
-					
-					//interateDOM(nList,1);
+					interateDOM(nList,1);
 				}
 				else {
 					System.out.println("It appears that the response body has become empty ...");
@@ -316,6 +320,142 @@ public class HttpCommunicationBehavior extends OneShotBehaviour implements
 				}
 			}
 		}
+	}
+	
+	private boolean parseData(){
+		boolean result = false;
+		boolean goodResponse = false;
+		String responseBody = "";
+				
+		// connect to robot and issue ListSensor command
+		HttpClient httpclient = new DefaultHttpClient();
+		HttpGet get = new HttpGet(url + ":" + port + "/GetData");
+		
+		// Reviewe response body for authentication key
+		HttpResponse response = null;
+        HttpEntity entity = null;
+		try {
+			System.out.println("executing request " + get.getRequestLine());
+			response = httpclient.execute(get);
+			entity = response.getEntity();
+			responseBody = convertStreamToString(entity.getContent());
+			if (response.getStatusLine().getStatusCode() == 200) {
+				System.out.println("Response content length: " + responseBody.length());
+				System.out.println("Response content type: " + entity.getContentType());
+				System.out.println("Response:\n" + responseBody);
+				goodResponse = true;
+			}
+		} catch (ClientProtocolException e) {
+			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+		} catch (IOException e) {
+			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+		}
+		
+		if (goodResponse){
+			
+			//-----> Allocate array list if this is 1st time through
+			if (jAgent.newSensordata == null){
+				jAgent.newSensordata = new ArrayList<SensorData>();
+			}
+			
+			//-----> Check for content in the msg body
+			if (responseBody != null) {
+				int dataCount = 0;
+				Document xmlContent;
+				
+				try {
+					xmlContent = stringToDom(responseBody);
+					Node root = xmlContent.getFirstChild();
+					System.out.println("Root Element's local name: " + root.getNodeName());
+					
+					NamedNodeMap attrs = root.getAttributes();
+					int numAttrs = attrs.getLength();
+					System.out.println("Root Element has: " + numAttrs + " attributes.");
+					
+					for (int inx = 0; inx < numAttrs; inx++){
+						Attr attr = (Attr)attrs.item(inx);
+						String attrName = attr.getNodeName();
+						String attrValue = attr.getNodeValue();
+						System.out.println(attrName + " - " + attrValue);
+						if (attrName.equalsIgnoreCase("count")){
+							dataCount = Integer.parseInt(attrValue);
+						}
+					}
+					
+					NodeList dataBits = root.getChildNodes();
+					int childCount = 0;
+					for (int inx = 0; inx<dataBits.getLength();inx++){
+						if (dataBits.item(inx) instanceof Element){
+							Element elem = (Element)dataBits.item(inx);
+							
+							if (elem.getNodeName().equalsIgnoreCase("SensorData")){
+								childCount++;
+								SensorData sensorData = null;
+								NamedNodeMap sAttr = elem.getAttributes();
+								
+								System.out.println(elem.getNodeName() + " has " + sAttr.getLength() + " attributes:");
+								for (int knx = 0; knx < sAttr.getLength();knx++){
+									Attr attr = (Attr)sAttr.item(knx);
+									String attrName = attr.getNodeName();
+									String attrValue = attr.getNodeValue();
+									System.out.println(attrName + " - " + attrValue);
+									if (attrName.equalsIgnoreCase("type")){
+										if (attrValue.contentEquals("temp")){
+											sensorData = new TemperatureData(myAgent.getAID(), SensorData.TEMPERATURE_SENSOR);
+											System.out.println("The sensor type is: " + sensorData.getType());
+										}
+									}
+								}
+								
+								NodeList data = elem.getChildNodes();
+								
+								for(int jnx = 0;jnx<data.getLength();jnx++){
+									if (data.item(jnx) instanceof Element){
+										Element sData = (Element)data.item(jnx);
+										System.out.println("sData name: " + sData.getNodeName());
+										
+										if (sData.getNodeName().equalsIgnoreCase("value")){
+											String value = sData.getTextContent();
+											//Check type
+											System.out.println("The sensor type is: " + sensorData.getType());
+											switch(sensorData.getType()){
+												case 1:
+													TemperatureData tData = (TemperatureData)sensorData;
+													tData.setTemp(Float.parseFloat(value));
+													sensorData = tData;
+													jAgent.newSensordata.add(tData);
+													break;
+												default:
+													System.out.println("Invalid sensor type.");
+											}
+										}
+									}
+								}
+								
+								System.out.println("Created the following obj:" + sensorData);
+							}
+						}
+					}
+					
+					if (childCount != dataCount){
+						System.out.println("Sensor data read error. Count mismatch: Expected - " + dataCount + " Actual - " + childCount);
+					}
+				} catch (SAXException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ParserConfigurationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			result = true;
+		}
+		
+		return result;
 	}
 	
 	/**

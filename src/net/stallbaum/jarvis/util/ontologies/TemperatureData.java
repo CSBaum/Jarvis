@@ -27,7 +27,6 @@ public class TemperatureData extends SensorData {
 	 */
 	public TemperatureData(AID _agent, int _type) {
 		super(_agent, _type);
-		// TODO Auto-generated constructor stub
 	}
 
 	/* (non-Javadoc)
