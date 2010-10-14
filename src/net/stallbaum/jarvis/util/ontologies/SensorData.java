@@ -12,16 +12,13 @@ import jade.core.AID;
  * @author Administrator
  *
  */
-public abstract class SensorData implements Concept, SecurityVocabulary {
+public abstract class SensorData implements Concept, SecurityVocabulary, SensorVocabulary {
 
 	Date timeStamp;
 	boolean isArchived;
 	int type;
 	AID agent;
-	
-	public static final int TEMPERATURE_SENSOR = 1;
-	public static final int ULTRASONIC_SENSOR = 2;
-	
+		
 	/**
 	 * 
 	 */

@@ -5,6 +5,7 @@ package net.stallbaum.jarvisagent;
 
 import net.stallbaum.jarvis.util.ontologies.AlertConfirmation;
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -108,7 +109,8 @@ public class CommunucationAgent extends AbsJAgent {
 		addBehaviour(acb);
 		
 		//-----> Add Shutdown Communication behavior
-		addBehaviour(new ShutdownAgent(this, 250, acb));
+		Behaviour[] behaviours = {acb};
+		addBehaviour(new ShutdownAgent(this, 250, behaviours));
 	}
 
 	@Override

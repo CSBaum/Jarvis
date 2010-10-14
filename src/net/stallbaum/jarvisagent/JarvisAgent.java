@@ -108,17 +108,22 @@ public class JarvisAgent extends AbsJAgent {
 
 		// TODO Implement rest of agent start up code
 
-		//----> Add JarvisCommBehahvior
 		
+		//----> Add JarvisCommBehahvior
 		ServerCommunicationBehavior sbc = new ServerCommunicationBehavior(this, 500);
 		addBehaviour(sbc);
 		
-		//-----> Add Shutdown Communication behavior
-		addBehaviour(new ShutdownAgent(this, 250, sbc));
-
 		//--->Add PlayerBehavior (start up local instance of Player instance OR initialize a blank instance)
 		doWait(2000);
-		addBehaviour(new HttpCommunicationBehavior(this, 10000));
+		HttpCommunicationBehavior hcb = new HttpCommunicationBehavior(this, 10000); 
+		addBehaviour(hcb);
+		
+		//-----> Add Shutdown Communication behavior
+		//----> Behaviour array
+		Behaviour[] behaviours = {sbc, hcb};
+		addBehaviour(new ShutdownAgent(this, 250, behaviours));
+
+		
 	}
 
 	/**

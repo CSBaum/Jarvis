@@ -12,6 +12,7 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import jade.util.Logger;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.ControllerException;
@@ -25,12 +26,13 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 public class ShutdownAgent extends TickerBehaviour implements
 		SecurityVocabulary {
 	
-	Behaviour behaviour = null;
+	Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+	Behaviour[] behaviours = null;
 	AbsJAgent jAgent = null;
 	
-	public ShutdownAgent(Agent a, long period, Behaviour _behaviour){
+	public ShutdownAgent(Agent a, long period, Behaviour[] _behaviours){
 		super(a, period);
-		behaviour = _behaviour;
+		behaviours = _behaviours;
 		jAgent = (AbsJAgent)a;
 	}
 	
@@ -61,9 +63,10 @@ public class ShutdownAgent extends TickerBehaviour implements
 			}
 			
 			//------> Remove Agent Behaviours
-			System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - Removing ServerCommBehaviour");
-			myAgent.removeBehaviour(behaviour);
-			
+			for(Behaviour behaviour:behaviours){
+				logger.info("Removing behaviour - " + behaviour.getBehaviourName());
+				myAgent.removeBehaviour(behaviour);
+			}
 			//------>Remove agent from container
 			try {
 				ContainerController cc = myAgent.getContainerController();

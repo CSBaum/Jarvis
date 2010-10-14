@@ -6,6 +6,8 @@ package net.stallbaum.jarvisagent;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import jade.content.lang.xml.XMLCodec;
+import jade.content.onto.Ontology;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -19,6 +21,7 @@ import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.Robot;
 import net.stallbaum.jarvis.util.ontologies.SecurityLevel;
+import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.SensorData;
 import net.stallbaum.jarvis.util.ontologies.SystemMessage;
@@ -52,7 +55,12 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		Object contentObj = null;
 		int performative = 0;
 		
-
+		/*
+		if ((jAgent.newSensordata != null)  && (jAgent.sensordata != null)) { 
+			logger.info("jAgent know about " + jAgent.newSensordata.size() + " new sensor logs\n" + 
+						"jAgent know about " + jAgent.sensordata.size() + " existing sensor logs");
+		} */
+		
 		MessageTemplate mt = null;
 		
 		if (jAgent.agentState != AGENT_INITIALIZING) {
@@ -116,7 +124,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 						// Get the conversation id so we can scope down the conversation :)
 						conversationId = msg.getConversationId();
 						jAgent.conversationId = conversationId;
-						System.out.println(jAgent.getLocalName() + ": Conversation ID is: " + conversationId);
+						logger.fine(jAgent.getLocalName() + ": Conversation ID is: " + conversationId);
 						
 						// Check if INFORM type with robot object
 						if (performative == ACLMessage.INFORM) {
@@ -199,7 +207,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							// Decide what we need to do 
 							if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
-								System.out.println(myAgent.getLocalName() + ": Agent Security is now -- " + jAgent.getAgentStateTxt());
+								System.out.println(myAgent.getLocalName() + ": Agent Security Level is now -- " + jAgent.getAgentStateTxt());
 							}
 							else if (sysMsg.getMsgID() == SYSTEM_HALT){
 								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
@@ -297,6 +305,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		
 		//-----> Check for alert status ...
 		//TODO       THIS SHOULD GO AWAY ....
+		/*
 		if (jAgent.alertFound) {
 			// we need to send out alert message
 			ACLMessage alertMsg = new ACLMessage(ACLMessage.PROPAGATE);
@@ -320,26 +329,31 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			}
 			
 			myAgent.send(alertMsg);
-		}
+		}*/
 		
 		//------> Sensor data check and send if right agent state
 		if ((jAgent.getState() == AGENT_ACTIVE) && 
-				(jAgent.newSensordata.size() > 0)){
-			int inx = 0;
-			
-			logger.fine("Processing " + jAgent.newSensordata.size() + 
+				(jAgent.newSensordata.size() > 0)){		
+			logger.info("Processing " + jAgent.newSensordata.size() + 
 						" new data inputs");
+			
 			// Generate a new msg for each data obj and then remove 
 			//       from the map and place on perm.
-			ACLMessage dataMsg = null;
+			Ontology ontology = SecurityOntology.getInstance();
+			jAgent.getContentManager().registerOntology(ontology);
+			jAgent.getContentManager().registerLanguage(new XMLCodec());
+			
+			//ACLMessage dataMsg = null;
 			
 			//for(SensorData data:jAgent.newSensordata){
 			for(int jnx=0; jnx < jAgent.newSensordata.size(); jnx++) {
 				SensorData data = jAgent.newSensordata.get(jnx);
 				// Initialize Msg
-				dataMsg = new ACLMessage(ACLMessage.INFORM);
+				ACLMessage dataMsg = new ACLMessage(ACLMessage.INFORM);
 				dataMsg.addReceiver(jAgent.getSender());
 				dataMsg.setSender(jAgent.getAID());
+				dataMsg.setLanguage(XMLCodec.NAME);
+				dataMsg.setPerformative(ACLMessage.INFORM);
 				dataMsg.setConversationId(jAgent.getConversationId());
 		
 				// Append data to msg
@@ -351,7 +365,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				}
 				
 				// Sned msg
-				jAgent.send(dataMsg);
+				logger.info("About to send message: " + dataMsg);
+				myAgent.send(dataMsg);
 				
 				// Move data to perm list
 				if (jAgent.sensordata == null){
@@ -360,12 +375,12 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				jAgent.sensordata.add(data);
 				
 				// Remove the item form teh new list
-				jAgent.newSensordata.remove(inx);
-				inx++;
+				jAgent.newSensordata.remove(jnx);
+				jnx++;
 			}
 		}
 		else {
-			logger.info("No new data or wrong state." + jAgent.getAgentState());
+			//logger.info("No new data or wrong state." + jAgent.getAgentState());
 		}
 	}
 }

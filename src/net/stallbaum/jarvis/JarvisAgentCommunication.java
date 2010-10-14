@@ -64,7 +64,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 		//     that need processing and continue, if not skip
 		//     the cycle.
 		logger.info("JarvisAgentCommunication with: " + targetAID.getLocalName());
-		System.out.println("State: " + jarvis.getSystemStateTxt());
+		logger.fine("State: " + jarvis.getSystemStateTxt());
 		
 		//------> Handle System halt messages,etc
 		switch(jarvis.systemState) {
@@ -100,6 +100,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 					}
 		
 					myAgent.send(msg);
+					msg = null;
 					logger.info(myAgent.getLocalName() +": Sent system halt message to " + targetAID.getLocalName());
 					agentNotified = true;
 				}
@@ -136,6 +137,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			}
 			
 			myAgent.send(msg);
+			msg = null;
 			logger.config("Sent Security Level change to " + targetAID.getLocalName());
 		}
 		
@@ -168,6 +170,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 	
 				myAgent.send(msg);
+				msg = null;
 				logger.info("Send Robot Object to " + targetAID.getLocalName());
 			}
 		}
@@ -224,6 +227,11 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				} catch (UnreadableException e) {
 					logger.warning("Unable to read message content" + e.getLocalizedMessage());
 				}
+			}
+			else {
+				logger.warning("Received unhandled msg of type: " + ACLMessage.getPerformative(performative) + "\n" +
+							   "\tFrom: " + msg.getSender().getLocalName() + "\n" + 
+							   "\tContaining: " + msg.getContent());
 			}
 		}
 		else {
