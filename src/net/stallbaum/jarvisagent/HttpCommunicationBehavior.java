@@ -366,11 +366,11 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 				try {
 					xmlContent = stringToDom(responseBody);
 					Node root = xmlContent.getFirstChild();
-					System.out.println("Root Element's local name: " + root.getNodeName());
+					logger.fine("Root Element's local name: " + root.getNodeName());
 					
 					NamedNodeMap attrs = root.getAttributes();
 					int numAttrs = attrs.getLength();
-					System.out.println("Root Element has: " + numAttrs + " attributes.");
+					logger.fine("Root Element has: " + numAttrs + " attributes.");
 					
 					for (int inx = 0; inx < numAttrs; inx++){
 						Attr attr = (Attr)attrs.item(inx);

@@ -646,7 +646,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_center.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front center sensor --> " + sensor.toString());
 							robot.setFrontCenterSensor(sensor);
 						}
 					}
@@ -656,7 +655,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_left.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front left sensor --> " + sensor.toString());
 							robot.setFrontLeftSensor(sensor);
 						}
 					}
@@ -666,7 +664,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_right.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front right sensor --> " + sensor.toString());
 							robot.setFrontRightSensor(sensor);
 						}
 					}
@@ -677,7 +674,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_front.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left front sensor --> " + sensor.toString());
 							robot.setLeftFrontSensor(sensor);
 						}
 					}
@@ -687,7 +683,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_middle.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left middle sensor --> " + sensor.toString());
 							robot.setLeftMiddleSensor(sensor);
 						}
 					}
@@ -697,7 +692,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_back.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left back sensor --> " + sensor.toString());
 							robot.setFrontRightSensor(sensor);
 						}
 					}
@@ -708,7 +702,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_front.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right front sensor --> " + sensor.toString());
 							robot.setRightFrontSensor(sensor);
 						}
 					}
@@ -718,7 +711,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_middle.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right middle sensor --> " + sensor.toString());
 							robot.setRightMiddleSensor(sensor);
 						}
 					}
@@ -728,7 +720,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_back.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right back sensor --> " + sensor.toString());
 							robot.setRightBackSensor(sensor);
 						}
 					}
@@ -739,7 +730,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_center.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back center sensor --> " + sensor.toString());
 							robot.setBackCenterSensor(sensor);
 						}
 					}
@@ -749,7 +739,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_left.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back left sensor --> " + sensor.toString());
 							robot.setBackLeftSensor(sensor);
 						}
 					}
@@ -759,7 +748,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_right.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back right sensor --> " + sensor.toString());
 							robot.setBackRightSensor(sensor);
 						}
 					}
@@ -775,7 +763,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						  e.getLocalizedMessage());
 		}
 		
-		logger.finer("Constructed this robot object --> " + robot);
+		//logger.finer("Constructed this robot object --> " + robot);
 		
 		return robot;
 	}

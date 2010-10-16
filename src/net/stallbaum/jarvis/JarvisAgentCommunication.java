@@ -205,18 +205,22 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				// Based on system state & content, do something :)
 			}
 			else if(performative == ACLMessage.AGREE) {
-				logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
-				jarvis.agentListingSet.add(msg.getSender());
-				logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
-				agentNotified = true;
+				if (msg.getContent().equals("Shutdown accepted")){
+					logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
+					jarvis.agentListingSet.add(msg.getSender());
+					logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
+					agentNotified = true;
+				}
+				else
+					logger.warning("Invalid AGREE message from " + msg.getSender().getLocalName());
 			}
 			else if(performative == ACLMessage.INFORM){
 				// ------> Agent is sending data back
-				logger.fine("Agent has recieved an INFORM msg");
+				logger.info("Agent has recieved an INFORM msg");
 				try {
 					if (msg.getContentObject() instanceof SensorData){
 						SensorData data = (SensorData)msg.getContentObject();
-						logger.fine("Recieved the following sensor data: " + data);
+						logger.info("Recieved the following sensor data: " + data);
 						//----> Send data to Jess Agent
 						
 						//----> Check if archived fleg is set

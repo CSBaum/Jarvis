@@ -188,7 +188,12 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 									System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 									jAgent.agentState = AGENT_HALTING;
 								}
+								else {
+									logger.warning("Unsupport System Message request: " + sysMsg.getMsgID());
+								}
 							}
+							reply.setPerformative(ACLMessage.CONFIRM);
+							reply.setContent("0");
 						}
 					}
 					break;
@@ -208,10 +213,14 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
 								System.out.println(myAgent.getLocalName() + ": Agent Security Level is now -- " + jAgent.getAgentStateTxt());
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else if (sysMsg.getMsgID() == SYSTEM_HALT){
 								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 								jAgent.agentState = AGENT_HALTING;
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else {
 								System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + ":" + UNSUPPORTED_SYS_MSG_MSG);
@@ -236,6 +245,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								// Set agent state to halting
 								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 								jAgent.agentState = AGENT_HALTING;
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else {
 								Problem problem = new Problem();
@@ -279,6 +290,9 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 							jAgent.agentState = AGENT_HALTING;
 						}
+						
+						reply.setPerformative(ACLMessage.CONFIRM);
+						reply.setContent("0");
 					}
 					break;
 				default:
@@ -295,9 +309,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 					
 			}
 			//-----> Send reply to Jarvis
-			if (jAgent.agentState != AGENT_HALTING){
-				myAgent.send(reply);
-			}
+				if (reply.getContent() == null){
+					logger.severe("We are trying to reply to Jarvis without any content.");
+				}
+				else {
+					logger.info("Sending meesgae to Jarvis as default action: " + reply.getContent());
+					myAgent.send(reply);
+				}
 		}
 		else {
 			block();

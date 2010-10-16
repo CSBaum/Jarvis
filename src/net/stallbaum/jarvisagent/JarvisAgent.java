@@ -122,8 +122,6 @@ public class JarvisAgent extends AbsJAgent {
 		//----> Behaviour array
 		Behaviour[] behaviours = {sbc, hcb};
 		addBehaviour(new ShutdownAgent(this, 250, behaviours));
-
-		
 	}
 
 	/**
