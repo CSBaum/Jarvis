@@ -405,13 +405,13 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		//}
 		if (command == SYSTEM_HALTING) {
 			systemState = SYSTEM_HALTING;
-			logger.info(getLocalName() + ": GUI sent Shutdown command.");
+			logger.info("GUI sent Shutdown command.");
 			alertGui(getSystemStateTxt());
 			//doDelete();
 			//System.exit(0);
 		}
 		else if (command == ADD_AGENT) {
-			logger.fine(getLocalName() + ": GUI has requested adding a new agent.");
+			logger.fine("GUI has requested adding a new agent.");
 			// -------> Get parameters from event 
 			
 			// -------> Insert data into appropriate tables
