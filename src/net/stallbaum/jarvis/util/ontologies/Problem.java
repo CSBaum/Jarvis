@@ -10,6 +10,7 @@ import jade.content.Concept;
  *
  */
 public class Problem implements Concept {
+	private String agentName = "";
 	private int num;
 	private String msg;
 	
@@ -29,11 +30,25 @@ public class Problem implements Concept {
 		this.msg = Errormsg;
 	}
 	
+	public void setAgentName(String _agent){
+		this.agentName = _agent;
+	}
+	
+	public String getAgentName() {
+		return this.agentName;
+	}
+	
 	public Problem(){
 		
 	}
 	
 	public Problem(int _num, String _msg) {
+		this.msg = _msg;
+		this.num = _num;
+	}
+	
+	public Problem(int _num, String _msg, String _agent){
+		this.agentName = _agent;
 		this.msg = _msg;
 		this.num = _num;
 	}
@@ -43,6 +58,6 @@ public class Problem implements Concept {
 	 */
 	@Override
 	public String toString() {
-		return "Problem [Error Code = " + num + ", Error Message =" + msg + "]";
+		return "Problem [Error Code = " + num + ", Error Message =" + msg + ", Agent = " + agentName + "]";
 	}
 }

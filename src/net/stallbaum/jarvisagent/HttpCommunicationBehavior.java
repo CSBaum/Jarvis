@@ -53,9 +53,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import jade.content.lang.xml.XMLCodec;
+import jade.content.onto.Ontology;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.WakerBehaviour;
+import jade.lang.acl.ACLMessage;
 import jade.util.Logger;
+import net.stallbaum.jarvis.util.ontologies.Problem;
+import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.Sensor;
 import net.stallbaum.jarvis.util.ontologies.SensorData;
@@ -74,6 +79,7 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 	String url;
 	int port;
 	boolean isInitialized;
+	boolean isError = false;
 	
 	public HttpCommunicationBehavior(JarvisAgent agent, long sleepTime){
 		super(agent, sleepTime);
@@ -89,7 +95,8 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			HttpClient httpclient = new DefaultHttpClient();
 					
 			// Testing code (remove once things are connected...
-			url = "http://192.168.20.104";
+			//url = "http://192.168.20.104";
+			url = "http://localhost";
 			port = 8080;
 			isInitialized = true;
 			
@@ -104,19 +111,47 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			}*/
 			
 			System.out.println("==================== Data Pull ========================");
-			if (!parseData()){
-				System.out.println("Unable to parse data from robot.");
-				jAgent.agentState = AGENT_HALTING;				
-			}
+			if (!isError) {
+				if (!parseData()){
+					System.out.println("Unable to parse data from robot.");
+					jAgent.agentState = AGENT_HALTING;
+				}
 			
-			System.out.println("==================== Data Pull Done ========================");
-			System.out.println("JarvisAgent know of " + jAgent.newSensordata.size() + " new sensor data readings...");
-	
-	        // When HttpClient instance is no longer needed, 
-	        // shut down the connection manager to ensure
-	        // immediate deallocation of all system resources
-	        httpclient.getConnectionManager().shutdown();      
+				System.out.println("==================== Data Pull Done ========================");
+				System.out.println("JarvisAgent know of " + jAgent.newSensordata.size() + " new sensor data readings...");
+		
+		        // When HttpClient instance is no longer needed, 
+		        // shut down the connection manager to ensure
+		        // immediate deallocation of all system resources
+		        httpclient.getConnectionManager().shutdown();
+			}
 		}
+	}
+	
+	private void sendProblem(Problem prob){
+		// -------> Send a reply
+		Ontology ontology = SecurityOntology.getInstance();
+		jAgent.getContentManager().registerOntology(ontology);
+		jAgent.getContentManager().registerLanguage(new XMLCodec());
+		
+		ACLMessage msg = new ACLMessage(ACLMessage.FAILURE);
+		msg.setSender(jAgent.getAID());
+		msg.addReceiver(jAgent.getSender());
+		msg.setLanguage(XMLCodec.NAME);
+		msg.setConversationId(jAgent.getConversationId());
+		msg.setPerformative(ACLMessage.FAILURE);
+		try {
+			msg.setContentObject(prob);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//logger.warning("About to send message:\n" + msg);
+		myAgent.send(msg);
+		
+		// Now shutdown behaviour
+		//jAgent.agentState = AGENT_HALTING;
+		isError = true;
 	}
 	
 	private boolean authenticate() {
@@ -135,20 +170,20 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			byte[] encrypted = cipher.doFinal("This is just an example times two".getBytes());
 			System.out.println("encrypted string: " + asHex(encrypted));
 		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Problem problem = new Problem(CIPHER_ERROR, e1.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (NoSuchPaddingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Problem problem = new Problem(CIPHER_ERROR, e1.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Problem problem = new Problem(CIPHER_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Problem problem = new Problem(CIPHER_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Problem problem = new Problem(CIPHER_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		}
 		
 		// Connect to robot's webserver using authentication URL information
@@ -186,8 +221,12 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			}
 		} catch (ClientProtocolException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(CLIENT_PROTOCAL_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (IOException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(IO_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		}
 
 		return retCode;
@@ -220,8 +259,12 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			}
 		} catch (ClientProtocolException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(CLIENT_PROTOCAL_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (IOException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(IO_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		}
 		
 		// convert response body into XML object
@@ -250,16 +293,16 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 					
 					NodeList nList; // = xmlContent.getChildNodes();
 					nList = xmlContent.getElementsByTagName("Sensor");
-					System.out.println("Found the element 'Sensor' --> " + nList.getLength() + " times.");
+					//System.out.println("Found the element 'Sensor' --> " + nList.getLength() + " times.");
 					
 					if (jAgent.agentRobot != null){
 						Integer robotCount = jAgent.agentRobot.getSensorCount();
 						System.out.println("Robot has " + robotCount + " sensors.");
 						if (nList.getLength() == robotCount){
-							logger.fine("The sensor counts line up!");
+							logger.finer("The sensor counts line up!");
 						}
 						else {
-							System.out.println("Agent sent a different number of sensors " 
+							logger.warning("Agent sent a different number of sensors " 
 									  + "than what Jarvis expects.  Robot -> " 
 									  + nList.getLength() + " | Jarvis -> " 
 									  + jAgent.agentRobot.getSensorCount());
@@ -272,13 +315,17 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 				}
 			} catch (SAXException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.warning("Unable to parse sensor data: " + e.getLocalizedMessage());
+				Problem problem = new Problem(XML_PARSE_ERROR, e.getLocalizedMessage());
+				sendProblem(problem);
 			} catch (ParserConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.warning("Unable to parse sensor data: " + e.getLocalizedMessage());
+				Problem problem = new Problem(XML_PARSE_ERROR, e.getLocalizedMessage());
+				sendProblem(problem);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.warning("Unable to parse sensor data: " + e.getLocalizedMessage());
+				Problem problem = new Problem(IO_ERROR, e.getLocalizedMessage());
+				sendProblem(problem);
 			}
 		}
 		// loop through objects to 
@@ -302,15 +349,15 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			//element = (Element)childNode;
 			if (childNode.getNodeType() == Node.ELEMENT_NODE) {
 			//if (!childNode.getNodeName().equalsIgnoreCase("#text")){
-				System.out.println("Node no: " + i + " - " + level + " is " + childNode.getNodeName());
+				//System.out.println("Node no: " + i + " - " + level + " is " + childNode.getNodeName());
 				Source src = new DOMSource(childNode); 
-				System.out.println("Its corresponding xml representation:");
+				//System.out.println("Its corresponding xml representation:");
 				Result dest = new StreamResult(System.out);
 				try {
 					aTransformer.transform(src, dest);
 				} catch (TransformerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Problem problem = new Problem(XML_PARSE_ERROR, e.getLocalizedMessage());
+					sendProblem(problem);
 				}
 				System.out.println("\n");
 				
@@ -346,9 +393,13 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 				goodResponse = true;
 			}
 		} catch (ClientProtocolException e) {
-			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			//logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(CLIENT_PROTOCAL_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		} catch (IOException e) {
-			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			//logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
+			Problem problem = new Problem(IO_ERROR, e.getLocalizedMessage());
+			sendProblem(problem);
 		}
 		
 		if (goodResponse){

@@ -3,10 +3,12 @@
  */
 package net.stallbaum.jarvis;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -43,6 +45,9 @@ import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
 import jade.lang.acl.ACLMessage;
 import jade.util.Logger;
+import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
+import jade.wrapper.ControllerException;
 
 //import jess.*;
 
@@ -128,14 +133,39 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		    numberOfRows = agentRS.getRow();
 		    logger.fine("Jarvis knows about: " + numberOfRows + " agents");
 		    agentRS.beforeFirst();
+		    
+		    ResultSetMetaData metadata;
+		    metadata = agentRS.getMetaData();
+		    /*
+		    for(int inx = 0; inx < metadata.getColumnCount(); inx++){
+		    	String colName = metadata.getColumnName(inx);
+		    	String colTypeName = metadata.getColumnTypeName(inx);
+		    	logger.info("Column Name: " + colName + " is " + colTypeName);
+		    	
+		    }*/
 		} catch (SQLException sex){
 			// handle any errors
-			System.out.println("SQL Error occured while setting up Jarvis: ");
-			System.out.println("         SQLException: " + sex.getMessage());
-			System.out.println("         SQLState: " + sex.getSQLState());
-			System.out.println("         VendorError: " + sex.getErrorCode());
+			logger.severe("SQL Error occured while setting up Jarvis:\n" +
+						  "         SQLException: " + sex.getMessage() + "\n" +
+						  "         SQLState: " + sex.getSQLState() + "\n" +
+						  "         VendorError: " + sex.getErrorCode());
 		}catch (Exception ex){
-			logger.severe("Unable to setup database:\n\t" + ex.getMessage() + "\n\t"+ ex.getStackTrace());
+			logger.severe("Unable to setup database:\n\t" + 
+						  ex.getLocalizedMessage() + "\n\t"+ 
+						  ex.getStackTrace().toString());
+			
+			//------>Remove agent from container
+			try {
+				logger.warning("Removing " + getLocalName() + " from the container.");
+				ContainerController cc = getContainerController();
+				AgentController ac;
+				ac = cc.getAgent(getLocalName());
+				ac.kill();
+			} catch (ControllerException e) {
+				// TODO Auto-generated catch block
+				logger.severe("Unable to remove " + getLocalName() + 
+							  " from Container.\n\t" + e.getLocalizedMessage());
+			}		
 		}finally {
 		}
 		
@@ -226,9 +256,9 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	private void checkForActiveAgents(int _numberOfRows, Vector<String> ignoreList){
 		
 		int rsCount = _numberOfRows;
-		System.out.println("============================");
-		System.out.println("Starting to look for agents!");
-		System.out.println("============================");
+		//System.out.println("============================");
+		//System.out.println("Starting to look for agents!");
+		//System.out.println("============================");
 
 		String agentName = "";
 		String agentType = "";
@@ -262,7 +292,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					agentPort = agentRS.getString("port");
 					robotId = agentRS.getInt("robot_id");
 					
-					logger.info(getLocalName() + ": Agent Info" + 
+					logger.finer("Agent Info" + 
 							   "\n\tName:" + agentName +
 							   "\n\tType: " + agentType + 
 							   "\n\tMAC:" + agentMac +
@@ -301,7 +331,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					agentPort = agentRS.getString("port");
 					robotId = agentRS.getInt("robot_id");
 					
-					logger.info(getLocalName() + ": Agent Info" + 
+					logger.finer("Agent Info" + 
 							   "\n\tName:" + agentName +
 							   "\n\tType: " + agentType + 
 							   "\n\tMAC:" + agentMac +
@@ -353,13 +383,13 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 					agentPort = agentRS.getString("port");
 					robotId = agentRS.getInt("robot_id");
 					
-					logger.info(getLocalName() + ": Agent Info" + 
-									   "\n\tName:" + agentName +
-									   "\n\tType: " + agentType + 
-									   "\n\tMAC:" + agentMac +
-									   "\n\tHost:" + agentHost + 
-									   "\n\tPort:" + agentPort +
-									   "\n\tRobot Id:" + robotId);
+					logger.finer("Agent Info" + 
+								   "\n\tName:" + agentName +
+								   "\n\tType: " + agentType + 
+								   "\n\tMAC:" + agentMac +
+								   "\n\tHost:" + agentHost + 
+								   "\n\tPort:" + agentPort +
+								   "\n\tRobot Id:" + robotId);
 					
 					for (int i = 0; i < result.length; ++i) {
 						if (agentName.equalsIgnoreCase(result[i].getName().getLocalName())){
@@ -403,24 +433,28 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		//	doDelete();
 		//	System.exit(0);
 		//}
-		if (command == SYSTEM_HALTING) {
+		if (command == GUI_SHUTDOWN) {
 			systemState = SYSTEM_HALTING;
 			logger.info(getLocalName() + ": GUI sent Shutdown command.");
 			alertGui(getSystemStateTxt());
 			//doDelete();
 			//System.exit(0);
 		}
-		else if (command == ADD_AGENT) {
+		else if (command == GUI_ADD_AGENT) {
 			logger.fine(getLocalName() + ": GUI has requested adding a new agent.");
-			// -------> Get parameters from event 
 			
+			// -------> Get parameters from event 
+
 			// -------> Insert data into appropriate tables
 			
 			// -------> Launch Agent on remote platform
 			
 			// -------> Add agent communication behavior
 		}
-		else if (command == SECURITY_LEVEL_OFF){
+		else if (command == GUI_REMOVE_AGENT) {
+			
+		}
+		else if (command == GUI_SEC_OFF){
 			logger.fine(getLocalName() + ": GUI sent Security Off command.");
 		
 			// -------> Need to update the system status to standby
@@ -438,7 +472,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
-		else if (command == SECURITY_LEVEL_NETWORK_AGENTS_ONLY){
+		else if (command == GUI_SEC_NET){
 			logger.fine(getLocalName() + ": GUI sent Security Network Agents Only command.");
 			
 			// -------> Update System State
@@ -456,8 +490,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
-		else if (command == SECURITY_LEVEL_ROBOT_AGENTS_ONLY){
-			logger.fine(getLocalName() + ": GUI sent Security Robot Agents Only command.");
+		else if (command == GUI_SEC_BOT){
+			logger.fine("GUI sent Security Robot Agents Only command.");
 			
 			lastSystemState = systemState;
 			systemState = SYSTEM_SECURITY_ROBOTONLY;
@@ -472,8 +506,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
-		else if (command == SECURITY_LEVEL_ALL_ON){
-			logger.fine(getLocalName() + ": GUI sent Security On command.");
+		else if (command == GUI_SEC_ON){
+			logger.fine("GUI sent Security On command.");
 			
 			lastSystemState = systemState;
 			systemState = SYSTEM_SECURITY_ALL;
@@ -488,8 +522,11 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			//               and changes levels so they equal
 			addBehaviour(new SecurityResetBehaviour(this, 5000));
 		}
-		else if (command == SYSTEM_RESET) {
-			logger.info(getLocalName() + ": GUI sent System Reset command.");
+		else if (command == GUI_RESET) {
+			logger.info("GUI sent System Reset command.");
+		}
+		else {
+			logger.info("GUI Send unsupport command: " + command);
 		}
 	}
 
@@ -646,7 +683,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_center.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front center sensor --> " + sensor.toString());
 							robot.setFrontCenterSensor(sensor);
 						}
 					}
@@ -656,7 +692,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_left.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front left sensor --> " + sensor.toString());
 							robot.setFrontLeftSensor(sensor);
 						}
 					}
@@ -666,7 +701,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = front_right.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding front right sensor --> " + sensor.toString());
 							robot.setFrontRightSensor(sensor);
 						}
 					}
@@ -677,7 +711,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_front.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left front sensor --> " + sensor.toString());
 							robot.setLeftFrontSensor(sensor);
 						}
 					}
@@ -687,7 +720,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_middle.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left middle sensor --> " + sensor.toString());
 							robot.setLeftMiddleSensor(sensor);
 						}
 					}
@@ -697,7 +729,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = left_back.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding left back sensor --> " + sensor.toString());
 							robot.setFrontRightSensor(sensor);
 						}
 					}
@@ -708,7 +739,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_front.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right front sensor --> " + sensor.toString());
 							robot.setRightFrontSensor(sensor);
 						}
 					}
@@ -718,7 +748,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_middle.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right middle sensor --> " + sensor.toString());
 							robot.setRightMiddleSensor(sensor);
 						}
 					}
@@ -728,7 +757,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = right_back.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding right back sensor --> " + sensor.toString());
 							robot.setRightBackSensor(sensor);
 						}
 					}
@@ -739,7 +767,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_center.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back center sensor --> " + sensor.toString());
 							robot.setBackCenterSensor(sensor);
 						}
 					}
@@ -749,7 +776,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_left.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back left sensor --> " + sensor.toString());
 							robot.setBackLeftSensor(sensor);
 						}
 					}
@@ -759,7 +785,6 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						String[] sensorIds = back_right.split(",");
 						for(String sensorId: sensorIds) {
 							Sensor sensor = lookupSensor(new Integer(sensorId));
-							logger.info("Adding back right sensor --> " + sensor.toString());
 							robot.setBackRightSensor(sensor);
 						}
 					}
@@ -775,7 +800,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 						  e.getLocalizedMessage());
 		}
 		
-		logger.finer("Constructed this robot object --> " + robot);
+		//logger.finer("Constructed this robot object --> " + robot);
 		
 		return robot;
 	}
@@ -898,7 +923,36 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 
 	//  --- generating distinct Random generator -------------------
 
-	private Random newRandom() 
-	{	return  new Random( hashCode() + System.currentTimeMillis()); }
+	//private Random newRandom() 
+	//{	return  new Random( hashCode() + System.currentTimeMillis()); }
 	
+	// This method returns the name of a JDBC type. 
+	// Returns null if jdbcType is not recognized.
+	/*
+	private static String getJdbcTypeName(int jdbcType) { 
+		// Use reflection to populate a map of int values to names 
+		if (map == null) { 
+			map = new HashMap(); 
+			
+			// Get all field in java.sql.Types 
+			Field[] fields = java.sql.Types.class.getFields(); 
+			for (int i=0; i<fields.length; i++) { 
+				try { 
+					// Get field name 
+					String name = fields[i].getName(); 
+					// Get field value 
+					Integer value = (Integer)fields[i].get(null); 
+					
+					// Add to map 
+					map.put(value, name); 
+				} 
+				catch (IllegalAccessException e) { 
+				} 
+			} 
+		} 
+		// Return the JDBC type name 
+		return (String)map.get(new Integer(jdbcType)); 
+	} */
+	
+	//static Map map; 
 }

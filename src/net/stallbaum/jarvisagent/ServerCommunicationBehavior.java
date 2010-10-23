@@ -10,17 +10,13 @@ import jade.content.lang.xml.XMLCodec;
 import jade.content.onto.Ontology;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import jade.util.Logger;
 import net.stallbaum.jarvis.util.ontologies.AgentInitialization;
-import net.stallbaum.jarvis.util.ontologies.MakeRobotOperation;
 import net.stallbaum.jarvis.util.ontologies.Problem;
-import net.stallbaum.jarvis.util.ontologies.Robot;
-import net.stallbaum.jarvis.util.ontologies.SecurityLevel;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 import net.stallbaum.jarvis.util.ontologies.SensorData;
@@ -84,13 +80,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				jAgent.sender = msg.getSender();
 			}
 			performative = msg.getPerformative();
-			System.out.println(myAgent.getLocalName() + ": Incoming Performative is: " + ACLMessage.getPerformative(performative));
+			//System.out.println(myAgent.getLocalName() + ": Incoming Performative is: " + ACLMessage.getPerformative(performative));
 			try {
 				contentObj = msg.getContentObject();
-				System.out.println(myAgent.getLocalName() + ": received the following message : ");
-				System.out.println(msg.toString());
+				//System.out.println(myAgent.getLocalName() + ": received the following message : ");
+				//System.out.println(msg.toString());
 			} catch (UnreadableException ure) {
-				System.out.println(myAgent.getLocalName() + ": Unable to process content.\n\t" + ure.getLocalizedMessage());
+				logger.warning("Unable to process content.\n\t" + ure.getLocalizedMessage());
 				Problem problem = new Problem(UNREADABLE_CONTENT, UNREADABLE_CONTENT_MSG);
 				reply.setPerformative(ACLMessage.FAILURE);
 				try {
@@ -124,7 +120,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 						// Get the conversation id so we can scope down the conversation :)
 						conversationId = msg.getConversationId();
 						jAgent.conversationId = conversationId;
-						logger.fine(jAgent.getLocalName() + ": Conversation ID is: " + conversationId);
+						logger.finer(jAgent.getLocalName() + ": Conversation ID is: " + conversationId);
 						
 						// Check if INFORM type with robot object
 						if (performative == ACLMessage.INFORM) {
@@ -136,7 +132,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								// Initialize Player / Robot Agent based on info
 								if (jAgent.agentType == ROBOT_AGENT){
 									jAgent.agentRobot = ai.getRobot();
-									System.out.println(myAgent.getLocalName() + ": Robot Information: " + jAgent.agentRobot.toString());
+									logger.finest("Robot Information: " + jAgent.agentRobot.toString());
 									
 									// Launch PlayerAgent
 									
@@ -153,14 +149,14 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								
 								// Change Agent state to Standby
 								jAgent.agentState = AGENT_STANDBY;
-								System.out.println(myAgent.getLocalName() + ": CHANGING State to -- " + jAgent.getAgentStateTxt());
+								logger.fine("CHANGING State to -- " + 
+											jAgent.getAgentStateTxt());
 								
 								// Reply to agent with success code (0)
 								reply.setPerformative(ACLMessage.CONFIRM);
 								reply.setContent("0");
 							}
 							else {
-								System.out.println("Content is not an initialization object ...");
 								Problem problem = new Problem();
 								problem.setNum(10);
 								problem.setMsg("Content type not understood");
@@ -168,8 +164,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								try {
 									reply.setContentObject(problem);
 								} catch (IOException e) {
-									System.out.println(myAgent.getLocalName() + ": Unable to add problem object to reply.");
-									System.out.println(e.getLocalizedMessage());
+									logger.severe("Unable to add problem object to reply.\n" + 
+												  e.getLocalizedMessage());
 									block();
 								}
 							}
@@ -177,18 +173,20 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 						else {
 							if (contentObj instanceof SystemMessage){
 								SystemMessage sysMsg = (SystemMessage)contentObj;
-								System.out.println(myAgent.getLocalName() + ": Content is: " + sysMsg.toString());
+								logger.finer("Content is: " + sysMsg.toString());
 								
 								// Decide what we need to do 
 								if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 									jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
-									System.out.println(myAgent.getLocalName() + ": Agent Security is now -- " + jAgent.getAgentStateTxt());
+									logger.finest("Agent Security is now -- " + jAgent.getAgentStateTxt());
 								}
 								else if(sysMsg.getMsgID() == SYSTEM_HALT){
-									System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
+									logger.info(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 									jAgent.agentState = AGENT_HALTING;
 								}
 							}
+							reply.setPerformative(ACLMessage.CONFIRM);
+							reply.setContent("0");
 						}
 					}
 					break;
@@ -202,19 +200,22 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 					if(msg.getPerformative() == ACLMessage.REQUEST){
 						if (contentObj instanceof SystemMessage){
 							SystemMessage sysMsg = (SystemMessage)contentObj;
-							System.out.println(myAgent.getLocalName() + ": Content is: " + sysMsg.toString());
+							//System.out.println(myAgent.getLocalName() + ": Content is: " + sysMsg.toString());
 							
 							// Decide what we need to do 
 							if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
-								System.out.println(myAgent.getLocalName() + ": Agent Security Level is now -- " + jAgent.getAgentStateTxt());
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else if (sysMsg.getMsgID() == SYSTEM_HALT){
 								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 								jAgent.agentState = AGENT_HALTING;
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else {
-								System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + ":" + UNSUPPORTED_SYS_MSG_MSG);
+								logger.warning(UNSUPPORTED_SYS_MSG_MSG);
 								Problem problem = new Problem();
 								problem.setNum(UNSUPPORTED_SYS_MSG);
 								problem.setMsg(UNSUPPORTED_SYS_MSG_MSG);
@@ -222,8 +223,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								try {
 									reply.setContentObject(problem);
 								} catch (IOException e) {
-									System.out.println(myAgent.getLocalName() + ": Unable to add problem object to reply.");
-									System.out.println(e.getLocalizedMessage());
+									logger.severe("Unable to add problem object to reply.\n" + 
+												  e.getLocalizedMessage());
 									block();
 								}
 							}
@@ -234,8 +235,10 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							SystemMessage sysMsg = (SystemMessage)contentObj;
 							if (sysMsg.getMsgID() == SYSTEM_HALT){
 								// Set agent state to halting
-								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
+								logger.info(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 								jAgent.agentState = AGENT_HALTING;
+								reply.setPerformative(ACLMessage.CONFIRM);
+								reply.setContent("0");
 							}
 							else {
 								Problem problem = new Problem();
@@ -245,8 +248,8 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								try {
 									reply.setContentObject(problem);
 								} catch (IOException e) {
-									System.out.println(myAgent.getLocalName() + ": Unable to add problem object to reply.");
-									System.out.println(e.getLocalizedMessage());
+									logger.severe("Unable to add problem object to reply.\n" + 
+											  e.getLocalizedMessage());
 									block();
 								}
 							}
@@ -254,14 +257,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 					}
 					else
 					{
-						System.out.println(myAgent.getLocalName() + ": Agent Standby State");
 						Problem problem = new Problem(INVALID_MSGTYPE, "Agent Standby - " + INVALID_MSGTYPE_MSG);
 						reply.setPerformative(ACLMessage.FAILURE);
 						try {
 							reply.setContentObject(problem);
 						} catch (IOException e1) {
-							System.out.println(myAgent.getLocalName() + ": Unable to add problem object to reply.");
-							System.out.println(e1.getLocalizedMessage());
+							logger.severe("Unable to add problem object to reply.\n" + 
+									  e1.getLocalizedMessage());
 						}
 					}
 					break;
@@ -279,23 +281,29 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 							jAgent.agentState = AGENT_HALTING;
 						}
+						reply.setPerformative(ACLMessage.CONFIRM);
+						reply.setContent("0");
 					}
 					break;
 				default:
 					//------> We shouldn't be here
-					System.out.println(myAgent.getLocalName() + ": Invalid Agent State --- " + jAgent.agentState);
+					//System.out.println(myAgent.getLocalName() + ": Invalid Agent State --- " + jAgent.agentState);
 					Problem problem = new Problem(INVALID_AGENT_STATE,INVALID_AGENT_STATE_MSG);
 					reply.setPerformative(ACLMessage.FAILURE);
 					try {
 						reply.setContentObject(problem);
 					} catch (IOException e) {
-						System.out.println(myAgent.getLocalName() + ": Unable to add problem object to reply.");
-						System.out.println(e.getLocalizedMessage());
+						logger.severe("Unable to add problem object to reply.\n" + 
+								  e.getLocalizedMessage());
 					}
 					
 			}
 			//-----> Send reply to Jarvis
-			if (jAgent.agentState != AGENT_HALTING){
+			if (reply.getContent() == null) {
+				logger.severe("We are trying to reply to Jarvis without any content.");
+			}
+			else {
+				logger.info("Sending message to Jarvis as default action: " + reply.getContent());
 				myAgent.send(reply);
 			}
 		}

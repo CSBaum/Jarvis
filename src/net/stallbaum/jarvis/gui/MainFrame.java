@@ -15,6 +15,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -49,10 +50,12 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.SwingUtilities;
 
 import net.stallbaum.jarvis.Jarvis;
+import net.stallbaum.jarvis.util.ontologies.Problem;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 
 
@@ -69,6 +72,7 @@ import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
 * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
 */
 public class MainFrame extends JFrame implements ActionListener, SecurityVocabulary {
+	private Vector<Integer> problemRows = new Vector<Integer>(1);
 	private JButton cancelButton;
 	private JTable agentTable;
 	private JScrollPane agentScrollPane;
@@ -220,7 +224,11 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 					agentTable.setFillsViewportHeight(true);
 					agentScrollPane.setViewportView(agentTable);
 					agentTable.setModel(jResultSet);
-					agentTable.setPreferredSize(new java.awt.Dimension(355, 113));
+					agentTable.setPreferredSize(new java.awt.Dimension(342, 113));
+					int columnCount = agentTable.getColumnCount();
+					for (int inx = 0; inx < columnCount; inx++){
+						agentTable.getColumnModel().getColumn(inx).setCellRenderer(new RenderStatus(problemRows));
+					}
 				}
 			}
 			thisLayout.setHorizontalGroup(thisLayout.createSequentialGroup()
@@ -521,7 +529,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 				"Are you sure you want to exit?", jarvisAgent.getLocalName(),
 				JOptionPane.YES_NO_CANCEL_OPTION);
 		if (rep == JOptionPane.YES_OPTION) {
-			GuiEvent ge = new GuiEvent(this, SYSTEM_HALTING);
+			GuiEvent ge = new GuiEvent(this, GUI_SHUTDOWN);
 			jarvisAgent.postGuiEvent(ge);
 		}
 		
@@ -560,6 +568,17 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if (o instanceof String){
 			statusjTextField.setText(o.toString());
 		}
+		else if (o instanceof Problem){
+			Problem problem = (Problem)o;
+			String agent = problem.getAgentName();
+			for (int inx = 0; inx < agentTable.getRowCount(); inx++){
+				String value = (String)agentTable.getValueAt(inx, 1);
+				if (value.equalsIgnoreCase(agent)){
+					problemRows.add(new Integer(inx));
+				}
+			}
+		}
+		agentTable.repaint();
 	}
 
 	private ResultSetTableModel generateTable(String whereClause){
@@ -771,7 +790,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(SetSecurityOffAction == null) {
 			SetSecurityOffAction = new AbstractAction("Off", null) {
 				public void actionPerformed(ActionEvent evt) {
-					GuiEvent ge = new GuiEvent(this, SECURITY_LEVEL_OFF);
+					GuiEvent ge = new GuiEvent(this, GUI_SEC_OFF);
 					jarvisAgent.postGuiEvent(ge);
 				}
 			};
@@ -783,7 +802,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(setSecurityNetOnlytAction == null) {
 			setSecurityNetOnlytAction = new AbstractAction("Network Agents Only", null) {
 				public void actionPerformed(ActionEvent evt) {
-					GuiEvent ge = new GuiEvent(this, SECURITY_LEVEL_NETWORK_AGENTS_ONLY);
+					GuiEvent ge = new GuiEvent(this, GUI_SEC_NET);
 					jarvisAgent.postGuiEvent(ge);
 				}
 			};
@@ -795,7 +814,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(setSecurityRobotsOnlyAction == null) {
 			setSecurityRobotsOnlyAction = new AbstractAction("Robots Only", null) {
 				public void actionPerformed(ActionEvent evt) {
-					GuiEvent ge = new GuiEvent(this, SECURITY_LEVEL_ROBOT_AGENTS_ONLY);
+					GuiEvent ge = new GuiEvent(this, GUI_SEC_BOT);
 					jarvisAgent.postGuiEvent(ge);
 				}
 			};
@@ -807,7 +826,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(setSecurityAllAction == null) {
 			setSecurityAllAction = new AbstractAction("On", null) {
 				public void actionPerformed(ActionEvent evt) {
-					GuiEvent ge = new GuiEvent(this, SECURITY_LEVEL_ALL_ON);
+					GuiEvent ge = new GuiEvent(this, GUI_SEC_ON);
 					jarvisAgent.postGuiEvent(ge);
 				}
 			};
@@ -819,7 +838,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(resetAction == null) {
 			resetAction = new AbstractAction("Reset", null) {
 				public void actionPerformed(ActionEvent evt) {
-					GuiEvent ge = new GuiEvent(this, SYSTEM_RESET);
+					GuiEvent ge = new GuiEvent(this, GUI_RESET);
 					jarvisAgent.postGuiEvent(ge);
 				}
 			};

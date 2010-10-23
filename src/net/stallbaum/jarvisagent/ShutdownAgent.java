@@ -40,8 +40,7 @@ public class ShutdownAgent extends TickerBehaviour implements
 	public void onTick() {
 		if (jAgent.getState() == AGENT_HALTING) {
 			
-			// send a reply
-			// -------> Send security level change message
+			// -------> Send a reply
 			Ontology ontology = SecurityOntology.getInstance();
 			jAgent.getContentManager().registerOntology(ontology);
 			jAgent.getContentManager().registerLanguage(new XMLCodec());

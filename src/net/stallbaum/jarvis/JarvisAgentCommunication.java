@@ -188,9 +188,12 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			if (performative == ACLMessage.FAILURE){
 				try {
 					Problem problem = (Problem)msg.getContentObject();
+					problem.setAgentName(targetAID.getLocalName());
 					logger.warning(getBehaviourName() + ": An error occured with Agent, " + msg.getSender().getName()
+									   + "\n\t: Agent: " + problem.getAgentName()
 									   + "\n\t: Error Code: " + problem.getNum()
 									   + "\n\t: Error Message: " + problem.getMsg());
+					jarvis.alertGui(problem);
 				} catch (UnreadableException ure) {
 					logger.warning("Unable to process content.\n\t" + ure.getLocalizedMessage());
 					//System.out.println(myAgent.getLocalName() + ": Unable to process content.\n\t" + ure.getLocalizedMessage());
@@ -198,31 +201,36 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 			}
 			else if (performative == ACLMessage.CONFIRM){
-				logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + " has confirmed last message success.");
+				logger.info("Agent " + msg.getSender().getLocalName() + " has confirmed last message success.");
 				agentInitialized = true;
 				jarvis.addActiveAgent(myAgent.getAID());
 				logger.config(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
 				// Based on system state & content, do something :)
 			}
 			else if(performative == ACLMessage.AGREE) {
-				logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
+				logger.info("Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
 				jarvis.agentListingSet.add(msg.getSender());
-				logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
+				logger.info(getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
 				agentNotified = true;
 			}
 			else if(performative == ACLMessage.INFORM){
 				// ------> Agent is sending data back
-				logger.fine("Agent has recieved an INFORM msg");
+				logger.info("Agent has recieved an INFORM msg");
 				try {
 					if (msg.getContentObject() instanceof SensorData){
 						SensorData data = (SensorData)msg.getContentObject();
-						logger.fine("Recieved the following sensor data: " + data);
+						logger.info("Recieved the following sensor data: " + data);
 						//----> Send data to Jess Agent
 						
 						//----> Check if archived fleg is set
 						if(data.getIsArchived()){
 							// write the data out to a  flat file
 						}
+					}
+					else
+					{
+						if (msg.getContentObject() != null)
+							logger.warning("Received the object type: " + msg.getContentObject().getClass().getName());
 					}
 				} catch (UnreadableException e) {
 					logger.warning("Unable to read message content" + e.getLocalizedMessage());

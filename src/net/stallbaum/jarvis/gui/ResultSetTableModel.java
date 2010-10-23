@@ -54,7 +54,10 @@ public class ResultSetTableModel implements TableModel {
     // This TableModel method specifies the data type for each column.  
     // We could map SQL types to Java types, but for this example, we'll just
     // convert all the returned data to strings.
-    public Class getColumnClass(int column) { return String.class; }
+    public Class getColumnClass(int column) {
+    	
+    	return getValueAt(0,column).getClass(); 
+    }
     
     /**
      * This is the key method of TableModel: it returns the value at each cell
@@ -68,7 +71,7 @@ public class ResultSetTableModel implements TableModel {
 	    results.absolute(row+1);                // Go to the specified row
 	    Object o = results.getObject(column+1); // Get value of the column
 	    if (o == null) return null;       
-	    else return o.toString();               // Convert it to a string
+	    else return o;               // Convert it to a string
 	} catch (SQLException e) { return e.toString(); }
     }
 

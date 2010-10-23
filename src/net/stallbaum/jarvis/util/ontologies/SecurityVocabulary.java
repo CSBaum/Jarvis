@@ -9,18 +9,7 @@ package net.stallbaum.jarvis.util.ontologies;
  */
 public interface SecurityVocabulary {
 
-	//-------> Basic vocabulary
-	   public static final int NEW_ACCOUNT = 1;
-	   public static final int DEPOSIT = 2;
-	   public static final int WITHDRAWAL = 3;
-	   public static final int BALANCE = 4;
-	   public static final int OPERATIONS = 5;
-	   public static final int ADMIN = 6;
-	   public static final int NOT_ENOUGH_MONEY = 10;
-	   public static final int ACCOUNT_NOT_FOUND = 11;
-	   public static final int ILLEGAL_OPERATION = 12;
-	   
-	   // ------> Agent Types
+		// ------> Agent Types
 	   public static final int ROBOT_AGENT = 1;
 	   public static final int NETWORK_AGENT = 2;
 	   public static final int REMOTE_AGENT = 3;
@@ -39,6 +28,19 @@ public interface SecurityVocabulary {
 	   public static final int STANDBY_WITH_SENSORS = 4;
 	   public static final int ACTIVATE = 5;
 	   public static final int REQUEST_DATA = 6;
+	   
+	   //-------> GUI Events
+	   public static final int GUI_SHUTDOWN = 1;
+	   public static final int GUI_HOLD = 2;
+	   public static final int GUI_RESET = 3;
+	   public static final int GUI_ADD_AGENT = 4;
+	   public static final int GUI_REMOVE_AGENT = 5;
+	   public static final int GUI_UPDATE_AGENT = 6; 
+	   
+	   public static final int GUI_SEC_OFF = 10;
+	   public static final int GUI_SEC_NET = 11;
+	   public static final int GUI_SEC_BOT = 12;
+	   public static final int GUI_SEC_ON = 15;
 	   
 	   //-------> System States
 	   public static final int SYSTEM_INITIALIZING = 0;
@@ -98,6 +100,12 @@ public interface SecurityVocabulary {
 	   
 	   public static int INVALID_MRO_TYPE = 400;
 	   public static String INVALID_MRO_TYPE_MSG = "Invalid MakeRobotOperation request type recieved";
+	   
+	   public static int IO_ERROR = 500;
+	   public static int CLIENT_PROTOCAL_ERROR = 501;
+	   public static int XML_PARSE_ERROR = 502;
+	   public static int CIPHER_ERROR = 503;
+	   
 
 	   //-------> Ontology vocabulary
 	   public static final String ROBOT = "Robot";
