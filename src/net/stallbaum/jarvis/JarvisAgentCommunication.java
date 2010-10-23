@@ -208,12 +208,6 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				// Based on system state & content, do something :)
 			}
 			else if(performative == ACLMessage.AGREE) {
-<<<<<<< HEAD
-				logger.info("Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
-				jarvis.agentListingSet.add(msg.getSender());
-				logger.info(getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
-				agentNotified = true;
-=======
 				if (msg.getContent().equals("Shutdown accepted")){
 					logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
 					jarvis.agentListingSet.add(msg.getSender());
@@ -222,7 +216,6 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 				else
 					logger.warning("Invalid AGREE message from " + msg.getSender().getLocalName());
->>>>>>> origin/master
 			}
 			else if(performative == ACLMessage.INFORM){
 				// ------> Agent is sending data back

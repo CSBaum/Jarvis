@@ -208,10 +208,6 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							// Decide what we need to do 
 							if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
-<<<<<<< HEAD
-=======
-								System.out.println(myAgent.getLocalName() + ": Agent Security Level is now -- " + jAgent.getAgentStateTxt());
->>>>>>> origin/master
 								reply.setPerformative(ACLMessage.CONFIRM);
 								reply.setContent("0");
 							}
@@ -288,10 +284,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 							System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 							jAgent.agentState = AGENT_HALTING;
 						}
-<<<<<<< HEAD
-=======
-						
->>>>>>> origin/master
+
 						reply.setPerformative(ACLMessage.CONFIRM);
 						reply.setContent("0");
 					}
@@ -310,7 +303,6 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 					
 			}
 			//-----> Send reply to Jarvis
-<<<<<<< HEAD
 			if (reply.getContent() == null) {
 				logger.severe("We are trying to reply to Jarvis without any content.");
 			}
@@ -318,15 +310,6 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				logger.info("Sending message to Jarvis as default action: " + reply.getContent());
 				myAgent.send(reply);
 			}
-=======
-				if (reply.getContent() == null){
-					logger.severe("We are trying to reply to Jarvis without any content.");
-				}
-				else {
-					logger.info("Sending meesgae to Jarvis as default action: " + reply.getContent());
-					myAgent.send(reply);
-				}
->>>>>>> origin/master
 		}
 		else {
 			block();
