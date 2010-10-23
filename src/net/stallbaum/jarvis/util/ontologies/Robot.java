@@ -196,7 +196,6 @@ public class Robot implements Concept, SecurityVocabulary {
 			Map.Entry entry = (Entry)itr.next();
 			int value = (Integer) entry.getValue();
 			if (value < 4) {
-				System.out.println("Adding a front sensor.");
 				retVector.add((Sensor)entry);
 			}
 		}
