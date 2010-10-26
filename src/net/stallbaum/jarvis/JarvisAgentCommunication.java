@@ -224,11 +224,13 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 					if (msg.getContentObject() instanceof SensorData){
 						SensorData data = (SensorData)msg.getContentObject();
 						logger.info("Recieved the following sensor data: " + data);
+						
 						//----> Send data to Jess Agent
 						
 						//----> Check if archived fleg is set
 						if(data.getIsArchived()){
-							// write the data out to a  flat file
+							logger.info("Archiving data ...");
+							jarvis.archive.archiveData(data);
 						}
 					}
 					else

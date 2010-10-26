@@ -25,8 +25,8 @@ public class TemperatureData extends SensorData {
 	/**
 	 * @param _agent
 	 */
-	public TemperatureData(AID _agent, int _type) {
-		super(_agent, _type);
+	public TemperatureData(AID _agent, int _type, int _id) {
+		super(_agent, _type, _id);
 	}
 
 	/* (non-Javadoc)

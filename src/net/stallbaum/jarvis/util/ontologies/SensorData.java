@@ -17,6 +17,7 @@ public abstract class SensorData implements Concept, SecurityVocabulary, SensorV
 	Date timeStamp;
 	boolean isArchived;
 	int type;
+	int id;
 	AID agent;
 		
 	/**
@@ -26,9 +27,10 @@ public abstract class SensorData implements Concept, SecurityVocabulary, SensorV
 		// TODO Auto-generated constructor stub
 	}
 	
-	public SensorData(AID _agent, int _type){
+	public SensorData(AID _agent, int _type, int _id){
 		this.agent = _agent;
 		this.type = _type;
+		this.id = _id;
 		this.isArchived = false;
 		this.timeStamp = new Date(); 
 	}
@@ -51,6 +53,10 @@ public abstract class SensorData implements Concept, SecurityVocabulary, SensorV
 	
 	public Date getTimeStamp() {
 		return this.timeStamp;
+	}
+	
+	public int getId() {
+		return this.id;
 	}
 	
 	@Override

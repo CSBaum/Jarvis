@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import net.stallbaum.jarvis.gui.MainFrame;
+import net.stallbaum.jarvis.util.Archiver;
 import net.stallbaum.jarvis.util.WakeOnLan;
 import net.stallbaum.jarvis.util.ontologies.Motor;
 import net.stallbaum.jarvis.util.ontologies.Robot;
@@ -69,6 +70,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	private Statement stmt = null;
 	
 	private int numberOfRows = 0;
+	
+	protected Archiver archive;
 	
 	//---------> System State information
 	protected int systemState = SYSTEM_INITIALIZING;
@@ -207,15 +210,26 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		addBehaviour(new JarvisCommandListener(this));
 		addBehaviour(new ShutdownAgent(this, 250));
 		
-		// ------- Launch GUI
-		jGui = new MainFrame(this, agentRS);
-		//inst.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		jGui.setLocationRelativeTo(null);
-		jGui.setVisible(true);
+		//----> COnfigure Archiver class
+		try {
+			archive = new Archiver(conn);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			logger.severe("Unable to initialize Archiver class: " + e.getLocalizedMessage());
+			systemState = SYSTEM_HALTING;
+		}
 		
-		doWait(2000);
-		systemState = SYSTEM_STANDBY;
-		alertGui(getSystemStateTxt());
+		// ------- Launch GUI
+		if (systemState != SYSTEM_HALTING) {
+			jGui = new MainFrame(this, agentRS);
+			//inst.setDefaultCloseOperation(EXIT_ON_CLOSE);
+			jGui.setLocationRelativeTo(null);
+			jGui.setVisible(true);
+			
+			doWait(2000);
+			systemState = SYSTEM_STANDBY;
+			alertGui(getSystemStateTxt());
+		}
 	}
 	
 	protected void takedown() {

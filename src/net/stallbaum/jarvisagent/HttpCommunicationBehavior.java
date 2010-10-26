@@ -452,7 +452,11 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 									System.out.println(attrName + " - " + attrValue);
 									if (attrName.equalsIgnoreCase("type")){
 										if (attrValue.contentEquals("temp")){
-											sensorData = new TemperatureData(myAgent.getAID(), SensorData.TEMPERATURE_SENSOR);
+											//TODO This needs to be moved out of the foor loop 'cause we need to get
+											//     both Type and ID from XML.
+											sensorData = new TemperatureData(myAgent.getAID(), SensorData.TEMPERATURE_SENSOR, 1);
+											// TODO Change this to actual data from robot settings ...
+											sensorData.setIsArchived(true);
 											System.out.println("The sensor type is: " + sensorData.getType());
 										}
 									}

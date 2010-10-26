@@ -29,7 +29,7 @@
         <tstamp/>
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}"/>
-        <!--
+	<!--
         <echo message="${toString:project.class.path}"/> 
         -->
     </target>
@@ -64,7 +64,7 @@
         <java fork="true" 
               classname="jade.Boot"
               classpathref="project.class.path">
-            <arg value="-gui Jarvis1:net.stallbaum.jarvisagent.JarvisAgent"/>            
+            <arg value="-gui -agents Jarvis:net.stallbaum.jarvis.Javis;JAgent-laptop:net.stallbaum.jarvisagent.JarvisAgent"/>            
         </java>
     </target>
 
