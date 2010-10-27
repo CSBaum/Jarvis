@@ -63,6 +63,10 @@ public class TemperatureData extends SensorData {
 	public Float getTemp(){
 		return this.temp;
 	}
+	
+	public String toArchive(){
+		return "temp=" + temp;
+	}
 
 	@Override
 	public String toString() {

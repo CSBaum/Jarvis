@@ -22,3 +22,6 @@
 # Logs and databases #
 ######################
 *.log
+/build
+/bin2
+/bin

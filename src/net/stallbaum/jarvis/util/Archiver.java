@@ -13,9 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.CharacterIterator;
+import java.text.SimpleDateFormat;
+import java.text.StringCharacterIterator;
+import java.util.Calendar;
 import java.util.Date;
 
 import jade.core.AID;
@@ -77,8 +82,12 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 	}
 	
 	public boolean archiveData(SensorData data){
+		
 		boolean retStatus = false;
 		boolean writeData = false;
+		
+		Statement stmt;
+		ResultSet rs;
 		
 		String fqnFile = "";
 		String file = "";
@@ -96,26 +105,45 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 		}
 		
 		//----> Build Filename
-		
-		//file = data.getTimeStamp() + "-" + sensorType + ".log";
-		file = sensorType + ".log";
-		
-		fqnFile += "\\" + file;
+		Date tStamp = data.getTimeStamp();
+		SimpleDateFormat formatter = new SimpleDateFormat("MMddyyyy");
+		file = formatter.format(tStamp) + "-" +   sensorType + ".log";
 		
 		//----> SHouldn't have to format text, just use toString of the obj
 		//----> Write data
+		String dataString = "";
+		
 		switch(data.getType()){
 			case TEMPERATURE_SENSOR: TemperatureData temp = (TemperatureData)data;
-									 writeData = writeData(fqnFile, file, temp.toString(), true);
+									 dataString = temp.toString();
+									 writeData = writeData(fqnFile, file, dataString, true);
 									 break;
 			case ULTRASONIC_SENSOR: break;
 			default: break;
 		}
 		
+		/*
 		if(writeData){
 			//----< Update ARchive table
+			try {
+				stmt = conn.createStatement();
+				stmt.setEscapeProcessing(true);
+				String sql = "INSERT INTO archives (agent, sensorType, sensorId, file, timestamp) VALUE(" + 
+				 			 "'" + data.getAgent().getLocalName() + "'," + data.getType() + "," +
+				 			 data.getId() + ",'" + dataString +"'" + data.getTimeStamp() + ")";
+				logger.info("Using Inser SQL --> " + sql);
+				//sql = esacpeString(sql);
+				//logger.info("Using Inser SQL --> " + sql);
+				int ret = stmt.executeUpdate(sql);
+				logger.info("SQL Insert returned: " + ret);
+				retStatus = true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
-		
+		*/
 		return retStatus;
 	}
 
@@ -128,9 +156,34 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 	 * @param endData
 	 * @return
 	 */
-	public SensorData[] retrieveData(AID agent, int sensorType, int sensorId, Date startDate, Date endData){
+	public SensorData[] retrieveData(AID agent, int sensorType, int sensorId, Date startDate, Date endDate){
 		SensorData[] data = {};
 		
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		String sql = "SELECT * FROM archives WHERE agnet =? AND sensorType = ? AND sensorId = ? AND timestamp >= ? AND timestamp <= ?)";
+		
+		if (endDate == null){
+			endDate = new Date();
+		}
+		
+		try {
+			stmt = conn.prepareStatement(sql);
+			stmt.setEscapeProcessing(true);
+			stmt.setString(1, agent.getLocalName());
+			stmt.setInt(2, sensorType);
+			stmt.setInt(3, sensorId);
+			stmt.setDate(4, (java.sql.Date) startDate);
+			stmt.setDate(5, (java.sql.Date) endDate);
+			rs = stmt.executeQuery();
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if (stmt != null)  try { stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+		}
 		return data;
 	}
 	
@@ -141,6 +194,22 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 
 	private void buildArchive() throws SQLException{
 		archiveRS = stmt.executeQuery("Select * from archives");
+	}
+	
+	private String esacpeString(String aText){
+		String new_sql;
+		StringBuilder result = new StringBuilder();
+		StringCharacterIterator iterator = new StringCharacterIterator(aText);
+		char character =  iterator.current();
+		
+		while (character != CharacterIterator.DONE ){
+			if (character == '\\') {
+				result.append("\\");
+			}
+		}
+
+		logger.info("The new string is: " + result);
+		return result.toString();
 	}
 	
 	/**
@@ -176,6 +245,7 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 			}
 		}
 		
+		logger.info("Creating loffile: " + filePath + "\\" + fileName);
 		Path file = Paths.get(filePath + "\\" + fileName);
 		byte data[] = _data.getBytes();
 

@@ -66,6 +66,7 @@ public abstract class SensorData implements Concept, SecurityVocabulary, SensorV
 	}
 
 	//---------> Abstract Methods
+	public abstract String toArchive();
 	public abstract String getDataSince(Date _start);
 	public abstract String getDataBetween(Date _start, Date _end);
 	public abstract String getDataBefore(Date _start);

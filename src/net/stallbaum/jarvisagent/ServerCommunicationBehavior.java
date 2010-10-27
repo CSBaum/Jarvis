@@ -377,7 +377,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				}
 				
 				// Sned msg
-				logger.info("About to send message: " + dataMsg);
+				logger.finer("About to send message: " + dataMsg);
 				myAgent.send(dataMsg);
 				
 				// Move data to perm list

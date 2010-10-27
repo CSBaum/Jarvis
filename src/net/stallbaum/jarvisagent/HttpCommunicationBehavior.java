@@ -487,7 +487,7 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 									}
 								}
 								
-								System.out.println("Created the following obj:" + sensorData);
+								logger.finer("Created the following obj:" + sensorData);
 							}
 						}
 					}
