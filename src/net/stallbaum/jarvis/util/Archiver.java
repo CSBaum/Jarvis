@@ -86,18 +86,18 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 		boolean retStatus = false;
 		boolean writeData = false;
 		
-		Statement stmt;
+		PreparedStatement stmt;
 		ResultSet rs;
 		
 		String fqnFile = "";
 		String file = "";
 		String sensorType = "";
+		String agentName = "";
 		
 		//----> Build Path
 		sensorType = getSensorType(data.getType());
 		if (sensorType != ""){
-			String agentName = data.getAgent().getLocalName();
-			logger.info("Agent Name: " + agentName);
+			agentName = data.getAgent().getLocalName();
 			fqnFile = rootDir + "\\" + 
 					  agentName + "\\" + 
 					  sensorType + "\\" + 
@@ -107,7 +107,7 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 		//----> Build Filename
 		Date tStamp = data.getTimeStamp();
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyyyy");
-		file = formatter.format(tStamp) + "-" +   sensorType + ".log";
+		file = formatter.format(tStamp) + "-" + sensorType + ".log";
 		
 		//----> SHouldn't have to format text, just use toString of the obj
 		//----> Write data
@@ -122,28 +122,32 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 			default: break;
 		}
 		
-		/*
+		
 		if(writeData){
 			//----< Update ARchive table
 			try {
-				stmt = conn.createStatement();
+				String sql = "INSERT INTO archives (agent, sensorType, sensorId, file, timestamp) " +
+							 "VALUE(?,?,?,?,?)";
+				stmt = conn.prepareStatement(sql);
+				
+				//----> Statement configuration
 				stmt.setEscapeProcessing(true);
-				String sql = "INSERT INTO archives (agent, sensorType, sensorId, file, timestamp) VALUE(" + 
-				 			 "'" + data.getAgent().getLocalName() + "'," + data.getType() + "," +
-				 			 data.getId() + ",'" + dataString +"'" + data.getTimeStamp() + ")";
-				logger.info("Using Inser SQL --> " + sql);
-				//sql = esacpeString(sql);
+				stmt.setString(1, agentName);
+				stmt.setInt(2, data.getType());
+				stmt.setInt(3, data.getId());
+				stmt.setString(4, data.toArchive());
+				stmt.setDate(5, (java.sql.Date) data.getTimeStamp());
+				
 				//logger.info("Using Inser SQL --> " + sql);
+
 				int ret = stmt.executeUpdate(sql);
 				logger.info("SQL Insert returned: " + ret);
 				retStatus = true;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+				logger.warning("Unable to insert archive data: " + e.getLocalizedMessage());
+			}	
 		}
-		*/
 		return retStatus;
 	}
 
@@ -173,8 +177,8 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 			stmt.setString(1, agent.getLocalName());
 			stmt.setInt(2, sensorType);
 			stmt.setInt(3, sensorId);
-			stmt.setDate(4, (java.sql.Date) startDate);
-			stmt.setDate(5, (java.sql.Date) endDate);
+			stmt.setDate(4, new java.sql.Date(startDate.getTime()));
+			stmt.setDate(5, new java.sql.Date(endDate.getTime()));
 			rs = stmt.executeQuery();
 			
 			
