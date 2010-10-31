@@ -127,7 +127,7 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 			//----< Update ARchive table
 			try {
 				String sql = "INSERT INTO archives (agent, sensorType, sensorId, file, timestamp) " +
-							 "VALUE(?,?,?,?,?)";
+							 "VALUES(?,?,?,?,?)";
 				stmt = conn.prepareStatement(sql);
 				
 				//----> Statement configuration
@@ -136,16 +136,18 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 				stmt.setInt(2, data.getType());
 				stmt.setInt(3, data.getId());
 				stmt.setString(4, data.toArchive());
-				stmt.setDate(5, (java.sql.Date) data.getTimeStamp());
+				stmt.setDate(5, new java.sql.Date(data.getTimeStamp().getTime()));
 				
 				//logger.info("Using Inser SQL --> " + sql);
 
-				int ret = stmt.executeUpdate(sql);
+				int ret = stmt.executeUpdate();
 				logger.info("SQL Insert returned: " + ret);
 				retStatus = true;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				logger.warning("Unable to insert archive data: " + e.getLocalizedMessage());
+				logger.warning("SQL State: " + e.getSQLState().toString());
+				logger.warning("Insert Stack Trace: " + e.getStackTrace().toString());
 			}	
 		}
 		return retStatus;
