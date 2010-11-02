@@ -4,7 +4,12 @@
 package net.stallbaum.jarvis;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Random;
+import java.util.Vector;
 
 import jade.content.lang.xml.XMLCodec;
 import jade.content.onto.Ontology;
@@ -231,6 +236,13 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 						if(data.getIsArchived()){
 							logger.info("Archiving data ...");
 							jarvis.archive.archiveData(data);
+							/*
+							logger.info("Attempting to retrieve data ....");
+							Date startDate = new GregorianCalendar(1994, 02, 14, 14, 00).getTime();
+							Date endDate = Calendar.getInstance().getTime();
+							logger.info("StartDate: " + startDate + " EndDate: " + endDate);
+							Vector<SensorData> requestedData = jarvis.archive.retrieveData(targetAID, 1, 1, startDate, endDate);
+							logger.info("We found " + requestedData.size() + " matching items.");*/
 						}
 					}
 					else

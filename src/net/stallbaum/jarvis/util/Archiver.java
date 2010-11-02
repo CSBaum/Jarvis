@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Vector;
 
 import jade.core.AID;
 import jade.util.Logger;
@@ -162,12 +163,12 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 	 * @param endData
 	 * @return
 	 */
-	public SensorData[] retrieveData(AID agent, int sensorType, int sensorId, Date startDate, Date endDate){
-		SensorData[] data = {};
+	public Vector<SensorData> retrieveData(AID agent, int sensorType, int sensorId, Date startDate, Date endDate){
+		Vector<SensorData> data = new Vector<SensorData>();
 		
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		String sql = "SELECT * FROM archives WHERE agnet =? AND sensorType = ? AND sensorId = ? AND timestamp >= ? AND timestamp <= ?)";
+		String sql = "SELECT * FROM archives WHERE agent = ? AND sensorType = ? AND sensorId = ? AND timestamp >= ? AND timestamp <= ?";
 		
 		if (endDate == null){
 			endDate = new Date();
@@ -182,7 +183,30 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 			stmt.setDate(4, new java.sql.Date(startDate.getTime()));
 			stmt.setDate(5, new java.sql.Date(endDate.getTime()));
 			rs = stmt.executeQuery();
-			
+			int rowCount;
+			rs.last();
+			rowCount = rs.getRow();
+			rs.beforeFirst();
+			logger.info("Found " + rowCount + " archived records.");
+
+			while(rs.next()){
+				// Based on type of sensor create the appropriate object
+				//      - add data to object from restultSet
+				//      - add obj to array
+				String agentName = rs.getString("agent");
+				int sensType = rs.getInt("sensorType");
+				int sensId = rs.getInt("sensorId");
+				String contents = rs.getString("file");
+				java.sql.Date timestamp = rs.getDate("timestamp");
+								
+				switch(sensType){
+					case 1: TemperatureData sData = new TemperatureData(new AID(agentName,AID.ISLOCALNAME ), sensType, sensId);
+							String temp[] = contents.split("=");
+							sData.setTemp(Float.parseFloat(temp[1]));
+							data.add(sData);
+							break;
+				}
+			}
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
