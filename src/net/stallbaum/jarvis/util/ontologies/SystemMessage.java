@@ -23,6 +23,15 @@ public class SystemMessage implements Concept, SecurityVocabulary {
 	public SystemMessage() {
 		// TODO Auto-generated constructor stub
 	}
+	
+	public SystemMessage(int _msgId){
+		this.msgID = _msgId;
+	}
+	
+	public SystemMessage(int _msgId, int _msgSubId){
+		this.msgID = _msgId;
+		this.msgSubId = _msgSubId;
+	}
 
 	/**
 	 * @return the msgID

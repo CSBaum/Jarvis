@@ -154,7 +154,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								
 								// Reply to agent with success code (0)
 								reply.setPerformative(ACLMessage.CONFIRM);
-								reply.setContent("0");
+								SystemMessage sysMsg = new SystemMessage(AGENT_ACK, AGENT_INITIALIZED);
+								try {
+									reply.setContentObject(sysMsg);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 							else {
 								Problem problem = new Problem();
@@ -189,7 +195,13 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								}
 							}
 							reply.setPerformative(ACLMessage.CONFIRM);
-							reply.setContent("0");
+							SystemMessage sysMsg = new SystemMessage(AGENT_ACK, jAgent.getState());
+							try {
+								reply.setContentObject(sysMsg);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 					break;
@@ -203,19 +215,33 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 					if(msg.getPerformative() == ACLMessage.REQUEST){
 						if (contentObj instanceof SystemMessage){
 							SystemMessage sysMsg = (SystemMessage)contentObj;
-							//System.out.println(myAgent.getLocalName() + ": Content is: " + sysMsg.toString());
+							SystemMessage newMsg = new SystemMessage();
 							
 							// Decide what we need to do 
 							if (sysMsg.getMsgID() == SYSTEM_SET_SECURITY_LEVEL) {
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
 								reply.setPerformative(ACLMessage.CONFIRM);
-								reply.setContent("0");
+								newMsg.setMsgID(AGENT_ACK);
+								newMsg.setMsgSubId(jAgent.getState());
+								try {
+									reply.setContentObject(newMsg);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 							else if (sysMsg.getMsgID() == SYSTEM_HALT){
 								System.out.println(myAgent.getLocalName() + ": Agent recieved shutdown message.");
 								jAgent.agentState = AGENT_HALTING;
 								reply.setPerformative(ACLMessage.CONFIRM);
-								reply.setContent("0");
+								newMsg.setMsgID(AGENT_ACK);
+								newMsg.setMsgSubId(jAgent.getState());
+								try {
+									reply.setContentObject(newMsg);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 							else {
 								logger.warning(UNSUPPORTED_SYS_MSG_MSG);
@@ -307,7 +333,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				logger.severe("We are trying to reply to Jarvis without any content.");
 			}
 			else {
-				logger.info("Sending message to Jarvis as default action: " + reply.getContent());
+				//logger.info("Sending message to Jarvis as default action: " + reply.getContent());
 				myAgent.send(reply);
 			}
 		}

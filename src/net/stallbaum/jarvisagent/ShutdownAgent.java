@@ -3,6 +3,8 @@
  */
 package net.stallbaum.jarvisagent;
 
+import java.io.IOException;
+
 import jade.content.lang.xml.XMLCodec;
 import jade.content.onto.Ontology;
 import jade.core.Agent;
@@ -18,6 +20,7 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.ControllerException;
 import net.stallbaum.jarvis.util.ontologies.SecurityOntology;
 import net.stallbaum.jarvis.util.ontologies.SecurityVocabulary;
+import net.stallbaum.jarvis.util.ontologies.SystemMessage;
 
 /**
  * @author sean
@@ -51,14 +54,20 @@ public class ShutdownAgent extends TickerBehaviour implements
 			msg.setLanguage(XMLCodec.NAME);
 			msg.setConversationId(jAgent.getConversationId());
 			msg.setPerformative(ACLMessage.AGREE);
-			msg.setContent("Shutdown accepted");
+			SystemMessage sysMsg = new SystemMessage(AGENT_ACK, jAgent.getState());
+			try {
+				msg.setContentObject(sysMsg);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				logger.warning("Unable to attach system response to message: " + e1.getLocalizedMessage());
+			}
 			myAgent.send(msg);
 			
 			//-------> Remove agent from DF
 			try{
 				DFService.deregister(jAgent);
 			}catch(FIPAException fe) {
-				System.out.println(myAgent.getLocalName() + ":" + getBehaviourName() + " - Unable to de-register agent: " + fe.getLocalizedMessage());
+				logger.warning(myAgent.getLocalName() + ":" + getBehaviourName() + " - Unable to de-register agent: " + fe.getLocalizedMessage());
 			}
 			
 			//------> Remove Agent Behaviours

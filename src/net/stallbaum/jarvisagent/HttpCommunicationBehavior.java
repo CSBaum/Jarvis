@@ -110,8 +110,8 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 				jAgent.agentState = AGENT_HALTING;
 			}*/
 			
-			System.out.println("==================== Data Pull ========================");
 			if (!isError) {
+				System.out.println("==================== Data Pull ========================");
 				if (!parseData()){
 					System.out.println("Unable to parse data from robot.");
 					jAgent.agentState = AGENT_HALTING;
@@ -259,11 +259,11 @@ public class HttpCommunicationBehavior extends WakerBehaviour implements
 			}
 		} catch (ClientProtocolException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
-			Problem problem = new Problem(CLIENT_PROTOCAL_ERROR, e.getLocalizedMessage());
+			Problem problem = new Problem(CLIENT_PROTOCAL_ERROR, "Unable to communucate with robot: " + e.getLocalizedMessage());
 			sendProblem(problem);
 		} catch (IOException e) {
 			logger.severe("Unable to communucate with robot: " + e.getLocalizedMessage());
-			Problem problem = new Problem(IO_ERROR, e.getLocalizedMessage());
+			Problem problem = new Problem(IO_ERROR, "Unable to communucate with robot: " + e.getLocalizedMessage());
 			sendProblem(problem);
 		}
 		

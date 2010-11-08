@@ -224,40 +224,41 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 					agentTable.setFillsViewportHeight(true);
 					agentScrollPane.setViewportView(agentTable);
 					agentTable.setModel(jResultSet);
-					agentTable.setPreferredSize(new java.awt.Dimension(342, 113));
+					agentTable.setPreferredSize(new java.awt.Dimension(400, 120));
 					int columnCount = agentTable.getColumnCount();
 					for (int inx = 0; inx < columnCount; inx++){
 						agentTable.getColumnModel().getColumn(inx).setCellRenderer(new RenderStatus(problemRows));
 					}
 				}
 			}
-			thisLayout.setHorizontalGroup(thisLayout.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(thisLayout.createParallelGroup()
-				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
-				        .addComponent(getStatusjLabel(), GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
-				        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-				        .addComponent(getStatusjTextField(), GroupLayout.PREFERRED_SIZE, 240, GroupLayout.PREFERRED_SIZE)
-				        .addGap(0, 35, Short.MAX_VALUE))
-				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
-				        .addComponent(agentScrollPane, 0, 358, Short.MAX_VALUE)
-				        .addGap(35))
-				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
-				        .addGap(0, 235, Short.MAX_VALUE)
-				        .addComponent(cancelButton, GroupLayout.PREFERRED_SIZE, 158, GroupLayout.PREFERRED_SIZE)))
-				.addContainerGap());
 			thisLayout.setVerticalGroup(thisLayout.createSequentialGroup()
 				.addContainerGap()
 				.addComponent(agentScrollPane, GroupLayout.PREFERRED_SIZE, 94, GroupLayout.PREFERRED_SIZE)
 				.addGap(24)
-				.addGroup(thisLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-				    .addComponent(getStatusjLabel(), GroupLayout.Alignment.BASELINE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
-				    .addComponent(getStatusjTextField(), GroupLayout.Alignment.BASELINE, GroupLayout.PREFERRED_SIZE, 21, GroupLayout.PREFERRED_SIZE))
-				.addGap(0, 84, Short.MAX_VALUE)
+				.addGroup(thisLayout.createParallelGroup()
+				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
+				        .addComponent(getStatusjTextField(), GroupLayout.PREFERRED_SIZE, 21, GroupLayout.PREFERRED_SIZE)
+				        .addGap(54))
+				    .addComponent(getStatusjLabel(), GroupLayout.Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+				.addGap(0, 41, Short.MAX_VALUE)
 				.addComponent(cancelButton, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
 				.addContainerGap());
+			thisLayout.setHorizontalGroup(thisLayout.createSequentialGroup()
+				.addContainerGap()
+				.addGroup(thisLayout.createParallelGroup()
+				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
+				        .addComponent(agentScrollPane, 0, 770, Short.MAX_VALUE)
+				        .addGap(35))
+				    .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
+				        .addComponent(getStatusjLabel(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+				        .addGroup(thisLayout.createParallelGroup()
+				            .addComponent(getStatusjTextField(), GroupLayout.Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 240, GroupLayout.PREFERRED_SIZE)
+				            .addGroup(GroupLayout.Alignment.LEADING, thisLayout.createSequentialGroup()
+				                .addGap(0, 82, Short.MAX_VALUE)
+				                .addComponent(cancelButton, GroupLayout.PREFERRED_SIZE, 158, GroupLayout.PREFERRED_SIZE))))));
 			pack();
-			this.setSize(434, 350);
+			this.setSize(750, 350);
 		} catch (Exception e) {
 		    //add your error handling code here
 			e.printStackTrace();
@@ -503,6 +504,9 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 		if(statusjLabel == null) {
 			statusjLabel = new JLabel();
 			statusjLabel.setText("System Status:");
+			statusjLabel.setVerticalAlignment(SwingConstants.TOP);
+			statusjLabel.setSize(320, 16);
+			statusjLabel.setToolTipText("Status messages from Jarvis");
 		}
 		return statusjLabel;
 	}
@@ -567,6 +571,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 
 		if (o instanceof String){
 			statusjTextField.setText(o.toString());
+			statusjTextField.validate();
 		}
 		else if (o instanceof Problem){
 			Problem problem = (Problem)o;
@@ -577,6 +582,7 @@ public class MainFrame extends JFrame implements ActionListener, SecurityVocabul
 					problemRows.add(new Integer(inx));
 				}
 			}
+			statusjTextField.setText("Error Code: " + problem.getNum() + " Error Msg: " + problem.getMsg() + ".(" + agent + ")");
 		}
 		agentTable.repaint();
 	}

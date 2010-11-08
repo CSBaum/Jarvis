@@ -53,6 +53,8 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 	private Jarvis jarvis = null;
 	
 	private boolean finished = false;
+	private boolean secChange = false;
+	private boolean shutdownRequested = false;
 	
 	public JarvisAgentCommunication(Agent a, long period, AID _AID, Robot _robot, String _alert) {
 		super(a, period);
@@ -108,6 +110,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 					msg = null;
 					logger.info(myAgent.getLocalName() +": Sent system halt message to " + targetAID.getLocalName());
 					agentNotified = true;
+					shutdownRequested = true;
 				}
 				else
 				{
@@ -144,6 +147,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 			myAgent.send(msg);
 			msg = null;
 			logger.config("Sent Security Level change to " + targetAID.getLocalName());
+			secChange = true;
 		}
 		
 		//-----> Test & security level cleanup
@@ -206,18 +210,51 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				}
 			}
 			else if (performative == ACLMessage.CONFIRM){
-				logger.info("Agent " + msg.getSender().getLocalName() + " has confirmed last message success.");
-				agentInitialized = true;
-				jarvis.addActiveAgent(myAgent.getAID());
-				logger.config(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
-				// Based on system state & content, do something :)
+				SystemMessage sysMsg = null;
+				try {
+					sysMsg = (SystemMessage)msg.getContentObject();
+				} catch (UnreadableException e) {
+					logger.severe("Unable to retrieve System Message from Agent: " + e.getLocalizedMessage());
+				}
+				
+				if (secChange){
+					switch(jarvis.securityLevel){
+						case SECURITY_LEVEL_OFF: logger.info("Security turned off ...");
+												 if (sysMsg.getMsgSubId() != AGENT_STANDBY){
+													 logger.warning("The agent is not reporting the correct status:" + sysMsg.getMsgSubId());
+												 }
+												 break;
+						case SECURITY_LEVEL_ALL_ON:	if (sysMsg.getMsgSubId() != AGENT_ACTIVE){
+														logger.warning("The agent is not reporting the correct status:" + sysMsg.getMsgSubId());
+													}
+													break;
+						default: logger.warning("We should never be haere ...");
+								 break;
+					}
+				}
+				else if (sysMsg.getMsgSubId() == AGENT_INITIALIZED){
+					agentInitialized = true;
+					jarvis.addActiveAgent(myAgent.getAID());
+					logger.config(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
+				}
 			}
 			else if(performative == ACLMessage.AGREE) {
-				if (msg.getContent().equals("Shutdown accepted")){
-					logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
-					jarvis.agentListingSet.add(msg.getSender());
-					logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
-					agentNotified = true;
+				SystemMessage sysMsg = null;
+				try {
+					sysMsg = (SystemMessage)msg.getContentObject();
+				} catch (UnreadableException e) {
+					logger.severe("Unable to retrieve System Message from Agent: " + e.getLocalizedMessage());
+				}
+				if (sysMsg.getMsgID() == AGENT_ACK){
+					if (sysMsg.getMsgSubId() == AGENT_HALTING){
+						logger.fine(myAgent.getLocalName() + ": Agent " + msg.getSender().getLocalName() + "has agreed to shutdown.");
+						jarvis.agentListingSet.add(msg.getSender());
+						logger.info(myAgent.getLocalName() + ":" + getBehaviourName() + " - New count of responding agents - " + jarvis.agentListingSet.size());
+						agentNotified = true;
+					}
+					else {
+						logger.warning("Invalid System Message SubID: " + sysMsg.getMsgSubId());
+					}
 				}
 				else
 					logger.warning("Invalid AGREE message from " + msg.getSender().getLocalName());
@@ -228,7 +265,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				try {
 					if (msg.getContentObject() instanceof SensorData){
 						SensorData data = (SensorData)msg.getContentObject();
-						logger.info("Recieved the following sensor data: " + data);
+						logger.fine("Recieved the following sensor data: " + data);
 						
 						//----> Send data to Jess Agent
 						

@@ -138,12 +138,16 @@ public class Archiver implements SecurityVocabulary,SensorVocabulary{
 				stmt.setInt(3, data.getId());
 				stmt.setString(4, data.toArchive());
 				stmt.setDate(5, new java.sql.Date(data.getTimeStamp().getTime()));
-				
-				//logger.info("Using Inser SQL --> " + sql);
 
 				int ret = stmt.executeUpdate();
-				logger.info("SQL Insert returned: " + ret);
-				retStatus = true;
+				if (ret > 0)
+				{
+					retStatus = true;
+				}
+				else
+				{
+					logger.warning("SQL insert did not return a positive value.");
+				}
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				logger.warning("Unable to insert archive data: " + e.getLocalizedMessage());

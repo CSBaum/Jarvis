@@ -20,6 +20,7 @@ public interface SecurityVocabulary {
 	   public static final int AGENT_STAND_BY_SENSORS = 2;
 	   public static final int AGENT_ACTIVE = 3;
 	   public static final int AGENT_HALTING = 4;
+	   public static final int AGENT_INITIALIZED = 99;
 	   
 	   //-------> Agent Operations
 	   public static final int INITIALIZE = 1;
@@ -52,6 +53,7 @@ public interface SecurityVocabulary {
 	   public static final int SYSTEM_ALARM = 10;
 	   
 	   //-------> System Messages
+	   public static int SUCCESS = 69;
 	   public static int SYSTEM_INIT = 0;
 	   public static String SYSTEM_INIT_MSG = "System-Init";
 	   public static int SYSTEM_HALT = 1;
@@ -77,6 +79,11 @@ public interface SecurityVocabulary {
 	   public static int QUERY_TYPE_STATUS = 0;
 	   public static int QUERY_TYPE_LOG = 1;
 	   public static int QUERY_TYPE_EVENT_DATA = 2;
+	   
+	   //------> Agent Messages
+	   public static int AGENT_ACK = 1;
+	   public static int AGENT_FAILURE = 2;
+	   public static int AGENT_CMD_UNDERSTOOD = 3;
 	   
 	   //------> Data Types
 	   public static int MAP_DATA = 1;

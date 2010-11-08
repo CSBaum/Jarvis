@@ -38,6 +38,7 @@ import jade.content.lang.sl.SLCodec;
 import jade.content.onto.Ontology;
 import jade.content.onto.basic.Action;
 import jade.core.AID;
+import jade.wrapper.AgentContainer;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -102,6 +103,8 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	// --------------- JADE Codex variables
 	private Codec codec = new SLCodec();
 	private Ontology ontology = SecurityOntology.getInstance();
+	
+	private AgentController t1 = null;
 	
 	transient protected MainFrame jGui;
 
@@ -210,6 +213,18 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		addBehaviour(new JarvisCommandListener(this));
 		addBehaviour(new ShutdownAgent(this, 250));
 		
+		/*/----> Launch the Jess Agent
+		try {
+			String t1AgentName = "JessAgent";
+			// create agent t1 on the same container of the creator agent
+			AgentContainer container = (AgentContainer)getContainerController(); // get a container controller for creating new agents
+			t1 = container.createNewAgent(t1AgentName, "net.stallbaum.jarvis.JessAgent", null);
+			t1.start();
+			System.out.println(getLocalName()+" created and started new "+t1AgentName + " ON CONTAINER "+((ContainerController) container).getContainerName());
+		} catch (Exception any) {
+			any.printStackTrace();
+		}*/
+		
 		//----> COnfigure Archiver class
 		try {
 			archive = new Archiver(conn);
@@ -225,8 +240,9 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			//inst.setDefaultCloseOperation(EXIT_ON_CLOSE);
 			jGui.setLocationRelativeTo(null);
 			jGui.setVisible(true);
-			
-			doWait(2000);
+		
+			// SHouuld have agent behaviours report back and then change status ...
+			doWait(4000);
 			systemState = SYSTEM_STANDBY;
 			alertGui(getSystemStateTxt());
 		}
@@ -550,30 +566,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	}
 
 	/*/--------------------------- Utility methods ----------------------------//
-	protected void lookupServer() {
-		// ---------------------  Search in the DF to retrieve the server AID
-
-		AID server;
-		ServiceDescription sd = new ServiceDescription();
-		sd.setType(SERVER_AGENT);
-		DFAgentDescription dfd = new DFAgentDescription();
-		dfd.addServices(sd);
-		try {
-			DFAgentDescription[] dfds = DFService.search(this, dfd);
-			if (dfds.length > 0 ) {
-				server = dfds[0].getName();
-				alertGui("Localized server");
-			}
-			else { 
-				alertGui("Unable to localize server. Please try later!");
-			}
-		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			System.out.println("Failed searching int the DF!");
-		}
-	}*/
-
+	
 	/**
 	 * 
 	 * @param server
