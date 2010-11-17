@@ -51,12 +51,6 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		Object contentObj = null;
 		int performative = 0;
 		
-		/*
-		if ((jAgent.newSensordata != null)  && (jAgent.sensordata != null)) { 
-			logger.info("jAgent know about " + jAgent.newSensordata.size() + " new sensor logs\n" + 
-						"jAgent know about " + jAgent.sensordata.size() + " existing sensor logs");
-		} */
-		
 		MessageTemplate mt = null;
 		
 		if (jAgent.agentState != AGENT_INITIALIZING) {
@@ -80,11 +74,9 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 				jAgent.sender = msg.getSender();
 			}
 			performative = msg.getPerformative();
-			//System.out.println(myAgent.getLocalName() + ": Incoming Performative is: " + ACLMessage.getPerformative(performative));
+
 			try {
 				contentObj = msg.getContentObject();
-				//System.out.println(myAgent.getLocalName() + ": received the following message : ");
-				//System.out.println(msg.toString());
 			} catch (UnreadableException ure) {
 				logger.warning("Unable to process content.\n\t" + ure.getLocalizedMessage());
 				Problem problem = new Problem(UNREADABLE_CONTENT, UNREADABLE_CONTENT_MSG);
@@ -103,7 +95,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			}
 			
 			//-----> Process message based on agent state
-			switch(jAgent.getState()){
+			switch(jAgent.agentState){
 				case AGENT_INITIALIZING:
 					// Should we check to see if it is the correct Performative? (Inform)
 					if (performative != ACLMessage.INFORM && performative != ACLMessage.REQUEST) {
@@ -158,8 +150,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								try {
 									reply.setContentObject(sysMsg);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									logger.severe("Unable to attach content object to reply: " + e.getLocalizedMessage());
 								}
 							}
 							else {
@@ -195,12 +186,11 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								}
 							}
 							reply.setPerformative(ACLMessage.CONFIRM);
-							SystemMessage sysMsg = new SystemMessage(AGENT_ACK, jAgent.getState());
+							SystemMessage sysMsg = new SystemMessage(AGENT_ACK, jAgent.agentState);
 							try {
 								reply.setContentObject(sysMsg);
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+								logger.severe("Unable to attach content object to reply: " + e.getLocalizedMessage());
 							}
 						}
 					}
@@ -222,7 +212,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								jAgent.checkSecurityLevel(sysMsg.getMsgSubId());
 								reply.setPerformative(ACLMessage.CONFIRM);
 								newMsg.setMsgID(AGENT_ACK);
-								newMsg.setMsgSubId(jAgent.getState());
+								newMsg.setMsgSubId(jAgent.agentState);
 								try {
 									reply.setContentObject(newMsg);
 								} catch (IOException e) {
@@ -235,7 +225,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 								jAgent.agentState = AGENT_HALTING;
 								reply.setPerformative(ACLMessage.CONFIRM);
 								newMsg.setMsgID(AGENT_ACK);
-								newMsg.setMsgSubId(jAgent.getState());
+								newMsg.setMsgSubId(jAgent.agentState);
 								try {
 									reply.setContentObject(newMsg);
 								} catch (IOException e) {
@@ -370,7 +360,7 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 		}*/
 		
 		//------> Sensor data check and send if right agent state
-		if ((jAgent.getState() == AGENT_ACTIVE) && 
+		if ((jAgent.agentState == AGENT_ACTIVE) && 
 				(jAgent.newSensordata.size() > 0)){		
 			logger.info("Processing " + jAgent.newSensordata.size() + 
 						" new data inputs");
@@ -380,12 +370,10 @@ public class ServerCommunicationBehavior extends TickerBehaviour implements
 			Ontology ontology = SecurityOntology.getInstance();
 			jAgent.getContentManager().registerOntology(ontology);
 			jAgent.getContentManager().registerLanguage(new XMLCodec());
-			
-			//ACLMessage dataMsg = null;
-			
-			//for(SensorData data:jAgent.newSensordata){
+
 			for(int jnx=0; jnx < jAgent.newSensordata.size(); jnx++) {
 				SensorData data = jAgent.newSensordata.get(jnx);
+
 				// Initialize Msg
 				ACLMessage dataMsg = new ACLMessage(ACLMessage.INFORM);
 				dataMsg.addReceiver(jAgent.getSender());

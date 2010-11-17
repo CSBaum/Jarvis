@@ -235,6 +235,7 @@ public class JarvisAgentCommunication extends TickerBehaviour implements
 				else if (sysMsg.getMsgSubId() == AGENT_INITIALIZED){
 					agentInitialized = true;
 					jarvis.addActiveAgent(myAgent.getAID());
+					jarvis.addInitializedAgent(myAgent.getAID());
 					logger.config(myAgent.getLocalName() + ": Adding new agent to Active Agent Set ...");
 				}
 			}

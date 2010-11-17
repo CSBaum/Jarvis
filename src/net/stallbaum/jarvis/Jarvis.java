@@ -84,12 +84,15 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	// ---------> House keeping variables
 	protected Vector<String> activeAgents = new Vector<String>();
 	protected Vector<AID>agentListing = new Vector<AID>();
+	//protected Vector<AID>agentsInitialized = new Vector<AID>();
 	
 	private HashSet<AID> activeAgentsHSet = new HashSet<AID>();
 	private HashSet<AID> agentListingHSet = new HashSet<AID>();
+	private HashSet<AID> agentsInitializedHSet = new HashSet<AID>();
 	
 	protected Set<AID> activeAgentsSet = Collections.synchronizedSet(activeAgentsHSet);
 	protected Set<AID> agentListingSet = Collections.synchronizedSet(agentListingHSet);
+	protected Set<AID> agentInitializedSet = Collections.synchronizedSet(agentsInitializedHSet);
 	
 	protected String alertId = "";
 	
@@ -104,12 +107,32 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 	private Codec codec = new SLCodec();
 	private Ontology ontology = SecurityOntology.getInstance();
 	
-	private AgentController t1 = null;
+	//private AgentController t1 = null;
 	
 	transient protected MainFrame jGui;
 
+	public void addAgentListing(AID _AID){
+		agentListingSet.add(_AID);
+	}
+	
+	public int getAgentListingCount(){
+		return this.agentListingSet.size();
+	}
+	
 	public void addActiveAgent(AID _AID){
 		activeAgentsSet.add(_AID);
+	}
+	
+	public int getActiveAgentCount() {
+		return this.activeAgentsSet.size();
+	}
+	
+	public void addInitializedAgent(AID _AID){
+		agentInitializedSet.add(_AID);
+	}
+	
+	public int getInitializedAgentCount(){
+		return this.agentInitializedSet.size();
 	}
 	
 	/**
@@ -213,6 +236,10 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		addBehaviour(new JarvisCommandListener(this));
 		addBehaviour(new ShutdownAgent(this, 250));
 		
+		//----> Add agent UI initialization behavior (this needs work)
+		AgentInitializationVerificationBehaviour aivb = new AgentInitializationVerificationBehaviour(this, 250);
+		addBehaviour(aivb);
+		
 		/*/----> Launch the Jess Agent
 		try {
 			String t1AgentName = "JessAgent";
@@ -225,7 +252,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 			any.printStackTrace();
 		}*/
 		
-		//----> COnfigure Archiver class
+		//----> Configure Archiver class
 		try {
 			archive = new Archiver(conn);
 		} catch (SQLException e) {
@@ -243,7 +270,7 @@ public class Jarvis extends GuiAgent implements SecurityVocabulary{
 		
 			// SHouuld have agent behaviours report back and then change status ...
 			doWait(4000);
-			systemState = SYSTEM_STANDBY;
+			//systemState = SYSTEM_STANDBY;
 			alertGui(getSystemStateTxt());
 		}
 	}

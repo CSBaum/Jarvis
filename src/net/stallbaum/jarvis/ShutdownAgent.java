@@ -43,7 +43,7 @@ public class ShutdownAgent extends TickerBehaviour implements
 		
 		if (jarvis.systemState == SYSTEM_HALTING) {
 			if (jarvis.agentListingSet.size() == jarvis.activeAgentsSet.size()){
-				logger.warning(myAgent.getLocalName() + ":" + getBehaviourName() + " - Shutting down");
+				logger.warning(myAgent.getLocalName() + ": Shutting down");
 				jarvis.takedown();
 				myAgent.doDelete();
 				System.exit(0);
